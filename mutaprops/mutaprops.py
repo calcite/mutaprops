@@ -41,7 +41,8 @@ class MutaProp(object):
 
     @classmethod
     def _exported_params(cls):
-        return (cls.MP_ID, cls.MP_NAME) + cls._allowed_kwargs()
+        return (cls.MP_ID, cls.MP_NAME, cls.MP_PRIORITY, cls.MP_HIERARCHY,
+                cls.MP_DEFINITION_ORDER,  cls.MP_DOC, cls.MP_VIEW)
 
     def __init__(self, pid, display_name, **kwargs):
         """
@@ -124,9 +125,15 @@ class MutaProp(object):
                                          doc=self.__doc__)
         return temp
 
-    def to_dict(self):
-        return {attr: getattr(self, '_muta_{0}'.format(attr))
-                for attr in self._exported_params()}
+    def to_dict(self, obj=None):
+        temp = {}
+        for attr in self._exported_params():
+            if attr == self.MP_DOC:
+                temp[self.MP_DOC] = self.__doc__
+            else:
+                temp[attr] = getattr(self, '_muta_{0}'.format(attr))
+
+        return temp
 
 
 class MutaProperty(MutaProp):
@@ -139,6 +146,7 @@ class MutaProperty(MutaProp):
     MP_FSET = 'fset'
     MP_FDEL = 'fdel'
     MP_CHANGE_CALLBACK = 'change_callback'
+    MP_VALUE = 'value'  # This is not used directly in this class
 
     @classmethod
     def _allowed_kwargs(cls):
@@ -275,6 +283,12 @@ class MutaProperty(MutaProp):
 
     def register_change_callback(self, callback):
         self._muta_change_callback = callback
+
+    def to_dict(self, obj=None):
+        temp = super().to_dict()
+        if obj:
+            temp[self.MP_VALUE] = self.__get__(obj)
+        return temp
 
 
 class MutaAction(MutaProp):
