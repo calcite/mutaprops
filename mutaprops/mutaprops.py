@@ -14,7 +14,6 @@ class MutaPropError(Exception):
 
 
 class MutaTypes(Enum):
-
     STRING = 0
     INT = 1
     REAL = 2
@@ -25,131 +24,208 @@ class MutaProp(object):
     """Generic MutaProp object"""
 
     __definition_counter = 0
+    MP_ID = 'id'
+    MP_NAME = 'name'
+    MP_PRIORITY = 'priority'
+    MP_HIERARCHY = 'hierarchy'
+    MP_DEFINITION_ORDER = 'deford'
+    MP_DOC = 'doc'
+    MP_VIEW = 'view'
 
-    def __init__(self, pid, display_name, display_priority=None, hierarchy=None,
-                 definition_order=None, doc=None, view=None):
-        self._id = pid
-        self._display_name = display_name
-        self._display_priority = display_priority
-        self._hierarchy = hierarchy
-        self._view = view
-        self.__doc__ = doc
-        self._definition_order = definition_order
+    # I'm using classmethods instead of class constants because of easier
+    # inheritance
+    @classmethod
+    def _allowed_kwargs(cls):
+        return cls.MP_PRIORITY, cls.MP_HIERARCHY, cls.MP_DEFINITION_ORDER, \
+               cls.MP_DOC, cls.MP_VIEW
 
-        if definition_order is None:
-            self._definition_order = MutaProp.__definition_counter
+    @classmethod
+    def _exported_params(cls):
+        return (cls.MP_ID, cls.MP_NAME) + cls._allowed_kwargs()
+
+    def __init__(self, pid, display_name, **kwargs):
+        """
+        :param pid:  Mutaprop identifier
+        :param display_name:  Mutaprop name to be displayed in GUI
+        :param kwargs:  Optional attibutes
+            *  `priority` : int
+                            Display priority, higher numbers are displayed first
+            * `hierarchy` : string
+                            Hierarchy path in the GUI
+            * `deford` :    int
+                            Modifies definition order. This is normally defined
+                            automatically based on the decorator calls
+            * `view` :      string
+                            identifier of recommended GUI view type
+        """
+        self._muta_id = pid
+        self._muta_name = display_name
+
+        # Check for invalid kwargs
+        for key in kwargs.keys():
+            if key not in self._allowed_kwargs():
+                raise MutaPropError("Invalid argument {0}".format(key))
+
+        # Assign with defaults
+        self._muta_priority = kwargs.get(self.MP_PRIORITY, None)
+
+        self._muta_hierarchy = kwargs.get(self.MP_HIERARCHY, None)
+        self._muta_view = kwargs.get(self.MP_VIEW, None)
+        self._muta_deford = kwargs.get(self.MP_DEFINITION_ORDER, None)
+
+        if self._muta_deford is None:
+            self._muta_deford = MutaProp.__definition_counter
             MutaProp.__definition_counter += 1
+
+        self.__doc__ = kwargs.get(self.MP_DOC, None)
+
+    def _assign_kwarg(self, kwarg_key, kwarg_value):
+        if kwarg_key in self._allowed_kwargs():
+            if kwarg_key == 'doc':
+                self.__doc__ = kwarg_value
+            else:
+                setattr(self, "_muta_{0}".format(kwarg_key), kwarg_value)
+        else:
+            raise MutaPropError("Invalid keyword {0}".format(kwarg_key))
 
     @property
     def prop_id(self):
-        return self._id
+        return self._muta_id
 
     @property
     def display_name(self):
-        return self._display_name
+        return self._muta_name
 
     @property
     def display_priority(self):
-        return self._display_priority
+        return self._muta_priority
 
     @property
     def hierarchy(self):
-        return self._hierarchy
+        return self._muta_hierarchy
 
     @property
     def view(self):
-        return self._view
+        return self._muta_view
 
     @property
     def definition_order(self):
-        return self._definition_order
+        return self._muta_deford
 
     def __str__(self):
         temp = (
             "ID: {pid}: {name}\n" +
             "order: {deford}, priority: {priority}, hierarchy: {hierarchy}\n" +
-            "Description: {doc}").format(pid=self._id, name=self._display_name,
-                                         deford=self._definition_order,
-                                         priority=self._display_priority,
-                                         hierarchy=self._hierarchy,
+            "Description: {doc}").format(pid=self._muta_id,
+                                         name=self._muta_name,
+                                         deford=self._muta_deford,
+                                         priority=self._muta_priority,
+                                         hierarchy=self._muta_hierarchy,
                                          doc=self.__doc__)
         return temp
 
+    def to_dict(self):
+        return {attr: getattr(self, '_muta_{0}'.format(attr))
+                for attr in self._exported_params()}
+
 
 class MutaProperty(MutaProp):
-    "Emulate PyProperty_Type() in Objects/descrobject.c"
+    """Emulate PyProperty_Type() in Objects/descrobject.c"""
 
-    def __init__(self, pid, display_name, value_type, min_value=None,
-                 max_value=None, step=None, display_priority=None,
-                 hierarchy=None, view=None, fget=None, fset=None, fdel=None,
-                 doc=None, definition_order=None, change_callback=None):
+    MP_MAXVAL = 'max_val'
+    MP_MINVAL = 'min_val'
+    MP_STEP = 'step'
+    MP_FGET = 'fget'
+    MP_FSET = 'fset'
+    MP_FDEL = 'fdel'
+    MP_CHANGE_CALLBACK = 'change_callback'
+
+    @classmethod
+    def _allowed_kwargs(cls):
+        return super()._allowed_kwargs() + (cls.MP_MAXVAL, cls.MP_MINVAL,
+                                            cls.MP_STEP, cls.MP_FGET,
+                                            cls.MP_FSET, cls.MP_FDEL,
+                                            cls.MP_CHANGE_CALLBACK)
+
+    @classmethod
+    def _exported_params(cls):
+        return super()._exported_params() + (cls.MP_MINVAL, cls.MP_MAXVAL,
+                                             cls.MP_STEP)
+
+    def __init__(self, pid, display_name, value_type, **kwargs):
+
+        doc = kwargs.get(self.MP_DOC, None)
+        fget = kwargs.get(self.MP_FGET, None)
 
         if doc is None and fget is not None:
-            doc = fget.__doc__
+            kwargs[self.MP_DOC] = fget.__doc__
 
-        super().__init__(pid, display_name, display_priority=display_priority,
-                         hierarchy=hierarchy, view=view,
-                         definition_order=definition_order, doc=doc)
+        super().__init__(pid, display_name, **kwargs)
 
-        self._value_type = value_type
-        self._min_value = min_value
-        self._max_value = max_value
-        self._step = step
-        self._fget = fget
-        self._fset = fset
-        self._fdel = fdel
-        self._change_callback = change_callback
+        self._muta_value_type = value_type
+        self._muta_min_val = kwargs.get(self.MP_MINVAL, None)
+        self._muta_max_val = kwargs.get(self.MP_MAXVAL, None)
+        self._muta_step = kwargs.get(self.MP_STEP, None)
+        self._muta_fget = kwargs.get(self.MP_FGET, None)
+        self._muta_fset = kwargs.get(self.MP_FSET, None)
+        self._muta_fdel = kwargs.get(self.MP_FDEL, None)
+        self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
+
+    def _get_kwargs(self):
+        temp = {}
+        for kwarg in self._allowed_kwargs():
+            if kwarg == self.MP_DOC:
+                temp[kwarg] = self.__doc__
+            else:
+                temp[kwarg] = getattr(self, '_muta_{0}'.format(kwarg))
+
+        return temp
 
     def __get__(self, obj, objtype=None):
         if obj is None:
             return self
-        if self._fget is None:
+        if self._muta_fget is None:
             raise MutaPropError("No getter defined.")
-        logger.debug("Getting value for %s", self._display_name)
-        return self._fget(obj)
+        logger.debug("Getting value for %s", self._muta_name)
+        return self._muta_fget(obj)
 
     def __set__(self, obj, value):
-        if self._fset is None:
+        if self._muta_fset is None:
             raise MutaPropError("No setter defined.")
 
-        different = (self._fget(obj) != value)
-        self._fset(obj, value)
+        different = (self._muta_fget(obj) != value)
+        self._muta_fset(obj, value)
 
         # Notify of property change
         if hasattr(obj, '_muta_obj_id'):
-            logger.debug("Called setter for %s on %s", self._display_name,
+            logger.debug("Called setter for %s on %s", self._muta_name,
                          obj._muta_obj_id)
-            if different and (self._change_callback):
-                self._change_callback(self, obj)
+            if different and self._muta_change_callback:
+                self._muta_change_callback(self, obj)
 
     def __delete__(self, obj):
-        if self._fdel is None:
+        if self._muta_fdel is None:
             raise MutaPropError("No deleter defined.")
-        self._fdel(obj)
+        self._muta_fdel(obj)
 
     def __str__(self):
         temp = (
             super().__str__() +
             "\nProperty [{valtyp}] ({minval}, {maxval}, {step})".format(
-                valtyp=self._value_type,
-                minval=self._min_value,
-                maxval=self._max_value,
-                step=self._step))
+                valtyp=self._muta_value_type,
+                minval=self._muta_min_val,
+                maxval=self._muta_max_val,
+                step=self._muta_step))
         return temp
 
     def getter(self, fget):
-        logger.debug("{0}: Getter set".format(self._id))
-        return type(self)(self._id, self._display_name, self._value_type,
-                          min_value=self._min_value, max_value=self._max_value,
-                          step=self._step,
-                          display_priority=self._display_priority,
-                          hierarchy=self._hierarchy, view=self._view,
-                          fget=fget, fset=self._fset, fdel=self._fdel,
-                          doc=self.__doc__,
-                          definition_order=self._definition_order,
-                          change_callback=self._change_callback)
+        logger.debug("{0}: Getter set".format(self._muta_id))
+        temp_kwargs = self._get_kwargs()
+        temp_kwargs[self.MP_FGET] = fget
+        return type(self)(self._muta_id, self._muta_name, self._muta_value_type,
+                          **temp_kwargs)
 
-    def setter(self, func=None, min_value=None, max_value=None, step=None):
+    def setter(self, func=None, min_val=None, max_val=None, step=None):
         """Decorator function usable in two ways:
             * decorator without arguments::
 
@@ -171,60 +247,45 @@ class MutaProperty(MutaProp):
 
         :returns: MetaProp object
         """
+        temp_kwargs = self._get_kwargs()
+        temp_kwargs[self.MP_MINVAL] = min_val or self._muta_min_val
+        temp_kwargs[self.MP_MAXVAL] = max_val or self._muta_max_val
+        temp_kwargs[self.MP_STEP] = step or self._muta_min_val
 
         if func:
-            logger.debug("{0}: Setter set".format(self._id))
-            return type(self)(
-                self._id, self._display_name, self._value_type,
-                min_value=self._min_value, max_value=self._max_value,
-                step=self._step, display_priority=self._display_priority,
-                hierarchy=self._hierarchy, view=self._view, fget=self._fget,
-                fset=func, fdel=self._fdel, doc=self.__doc__,
-                definition_order=self._definition_order,
-                change_callback=self._change_callback)
+            logger.debug("{0}: Setter set".format(self._muta_id))
+            temp_kwargs[self.MP_FSET] = func
+            return type(self)(self._muta_id, self._muta_name,
+                              self._muta_value_type, **temp_kwargs)
 
         else:
             def decorator(fset):
-                logger.debug("{0}: Setter set".format(self._id))
-                return type(self)(
-                    self._id, self._display_name, self._value_type,
-                    min_value=min_value or self._min_value,
-                    max_value=max_value or self._max_value,
-                    step=step or self._step,
-                    display_priority=self._display_priority,
-                    hierarchy=self._hierarchy, view=self._view, fget=self._fget,
-                    fset=fset, fdel=self._fdel, doc=self.__doc__,
-                    definition_order=self._definition_order,
-                    change_callback=self._change_callback)
+                logger.debug("{0}: Setter set".format(self._muta_id))
+                temp_kwargs[self.MP_FSET] = fset
+                return type(self)(self._muta_id, self._muta_name,
+                                  self._muta_value_type, **temp_kwargs)
             return decorator
 
     def deleter(self, fdel):
-        logger.debug("{0}: Deleter set".format(self._id))
-        return type(self)(self._id, self._display_name, self._value_type,
-                          min_value=self._min_value, max_value=self._max_value,
-                          step=self._step,
-                          display_priority=self._display_priority,
-                          hierarchy=self._hierarchy, view=self._view,
-                          fget=self._fget, fset=self._fset, fdel=fdel,
-                          doc=self.__doc__,
-                          definition_order=self._definition_order,
-                          change_callback=self._change_callback)
+        logger.debug("{0}: Deleter set".format(self._muta_id))
+        temp_kwargs = self._get_kwargs()
+        temp_kwargs[self.MP_FDEL] = fdel
+        return type(self)(self._muta_id, self._muta_name, self._muta_value_type,
+                          **temp_kwargs)
 
     def register_change_callback(self, callback):
-        self._change_callback = callback
+        self._muta_change_callback = callback
 
 
 class MutaAction(MutaProp):
+    def __init__(self, pid, display_name, callback, **kwargs):
 
-    def __init__(self, pid, display_name, callback, display_priority=None,
-                 hierarchy=None, view=None, doc=None, definition_order=None):
+        doc = kwargs.get(self.MP_DOC, None)
 
-        if doc is None and callback is not None:
-            doc = callback.__doc__
+        if doc is None:
+            kwargs[self.MP_DOC] = callback.__doc__
 
-        super().__init__(pid, display_name, display_priority=display_priority,
-                         hierarchy=hierarchy, view=view,
-                         definition_order=definition_order, doc=doc)
+        super().__init__(pid, display_name, **kwargs)
 
         self._callback = callback
 
@@ -232,7 +293,7 @@ class MutaAction(MutaProp):
         if not hasattr(obj, '_muta_obj_id'):
             raise MutaPropError("Executing action on uninitialized MutaObject.")
 
-        logger.debug("%s: External execution call on %s", self._id,
+        logger.debug("%s: External execution call on %s", self._muta_id,
                      obj._muta_obj_id)
         self.__call__(obj)
 
@@ -241,6 +302,11 @@ class MutaAction(MutaProp):
             raise MutaPropError("No callback is defined.")
         self._callback(obj)
 
+    # It's necessary to use non-data descriptor to make this callable class
+    # capable of binding a method
+    # https://docs.python.org/3.5/howto/descriptor.html#functions-and-methods
+    # http://stackoverflow.com/questions/972/adding-a-method-to-an-existing-object-instance
+    # http://stackoverflow.com/questions/26226604/decorating-a-class-function-with-a-callable-instance
     def __get__(self, obj, objtype=None):
         return types.MethodType(self, obj)
 
@@ -269,15 +335,15 @@ class MutaPropClass(object):
     # Normal properties cannot be used on class variables, so going with get_*
     @classmethod
     def get_class_name(cls):
-        return cls._mutaprop_display_name
+        return cls._muta_name
 
     @classmethod
     def get_gui_version(cls):
-        return (cls._mutaprop_major_version, cls._mutaprop_minor_version)
+        return (cls._muta_gui_major_version, cls._muta_gui_minor_version)
 
     @classmethod
     def get_gui_id(cls):
-        return cls._mutaprop_gui_id
+        return cls._muta_gui_id
 
     def muta_init(self, object_id):
         self.update_props()
