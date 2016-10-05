@@ -31,6 +31,8 @@ class MutaProp(object):
     MP_DEFINITION_ORDER = 'deford'
     MP_DOC = 'doc'
     MP_VIEW = 'view'
+    MP_TYPE = 'type'
+    MP_CLASS_TYPE = 'abstract'
 
     # I'm using classmethods instead of class constants because of easier
     # inheritance
@@ -42,7 +44,7 @@ class MutaProp(object):
     @classmethod
     def _exported_params(cls):
         return (cls.MP_ID, cls.MP_NAME, cls.MP_PRIORITY, cls.MP_HIERARCHY,
-                cls.MP_DEFINITION_ORDER,  cls.MP_DOC, cls.MP_VIEW)
+                cls.MP_DEFINITION_ORDER,  cls.MP_DOC, cls.MP_VIEW, cls.MP_TYPE)
 
     def __init__(self, pid, display_name, **kwargs):
         """
@@ -130,6 +132,8 @@ class MutaProp(object):
         for attr in self._exported_params():
             if attr == self.MP_DOC:
                 temp[self.MP_DOC] = self.__doc__
+            elif attr == self.MP_TYPE:
+                temp[self.MP_TYPE] = self.MP_CLASS_TYPE
             else:
                 temp[attr] = getattr(self, '_muta_{0}'.format(attr))
 
@@ -147,6 +151,9 @@ class MutaProperty(MutaProp):
     MP_FDEL = 'fdel'
     MP_CHANGE_CALLBACK = 'change_callback'
     MP_VALUE = 'value'  # This is not used directly in this class
+    MP_VALUE_TYPE = 'value_type'
+    MP_CLASS_TYPE = 'property'
+    MP_READ_ONLY = 'read_only'
 
     @classmethod
     def _allowed_kwargs(cls):
@@ -158,7 +165,8 @@ class MutaProperty(MutaProp):
     @classmethod
     def _exported_params(cls):
         return super()._exported_params() + (cls.MP_MINVAL, cls.MP_MAXVAL,
-                                             cls.MP_STEP)
+                                             cls.MP_STEP, cls.MP_READ_ONLY,
+                                             cls.MP_VALUE_TYPE)
 
     def __init__(self, pid, display_name, value_type, **kwargs):
 
@@ -205,10 +213,11 @@ class MutaProperty(MutaProp):
         self._muta_fset(obj, value)
 
         # Notify of property change
-        if hasattr(obj, '_muta_obj_id'):
-            logger.debug("Called setter for %s on %s", self._muta_name,
-                         obj._muta_obj_id)
+        if isinstance(obj, MutaProperty) and obj._is_muta_ready():
+
             if different and self._muta_change_callback:
+                logger.debug("Notification of set call for %s on %s",
+                             self._muta_name, obj.muta_id)
                 self._muta_change_callback(self, obj)
 
     def __delete__(self, obj):
@@ -219,11 +228,12 @@ class MutaProperty(MutaProp):
     def __str__(self):
         temp = (
             super().__str__() +
-            "\nProperty [{valtyp}] ({minval}, {maxval}, {step})".format(
+            "\nProperty {ro} [{valtyp}] ({minval}, {maxval}, {step})".format(
                 valtyp=self._muta_value_type,
                 minval=self._muta_min_val,
                 maxval=self._muta_max_val,
-                step=self._muta_step))
+                step=self._muta_step,
+                ro='[Read Only]' if self.is_read_only() else ''))
         return temp
 
     def getter(self, fget):
@@ -285,13 +295,28 @@ class MutaProperty(MutaProp):
         self._muta_change_callback = callback
 
     def to_dict(self, obj=None):
+        setattr(self, '_muta_{0}'.format(self.MP_READ_ONLY),
+                self.is_read_only())
         temp = super().to_dict()
         if obj:
             temp[self.MP_VALUE] = self.__get__(obj)
+        temp[self.MP_VALUE_TYPE] = self._muta_value_type.name
         return temp
+
+    def muta_set(self, obj, value):
+        # TODO: Validation!
+        if self._muta_fget(obj) != value:
+            logger.debug("Set remotely to %s", str(value))
+            self._muta_fset(obj, value)
+
+    def is_read_only(self):
+        return self._muta_fset is None
 
 
 class MutaAction(MutaProp):
+
+    MP_CLASS_TYPE = 'action'
+
     def __init__(self, pid, display_name, callback, **kwargs):
 
         doc = kwargs.get(self.MP_DOC, None)
@@ -303,7 +328,7 @@ class MutaAction(MutaProp):
 
         self._callback = callback
 
-    def call(self, obj):
+    def muta_call(self, obj):
         if not hasattr(obj, '_muta_obj_id'):
             raise MutaPropError("Executing action on uninitialized MutaObject.")
 
@@ -327,6 +352,20 @@ class MutaAction(MutaProp):
 
 class MutaPropClass(object):
 
+    MP_OBJ_ID = 'obj_id'
+    MP_PROPS = 'props'
+    MP_NAME = 'name'
+    MP_GUI_ID = 'gui_id'
+    MP_GUI_MAJOR_VERSION = 'gui_major_version'
+    MP_GUI_MINOR_VERSION = 'gui_minor_version'
+    MP_DOC = 'doc'
+
+    @classmethod
+    def _exported_params(cls):
+        return (cls.MP_OBJ_ID, cls.MP_NAME, cls.MP_PROPS,
+                cls.MP_GUI_MAJOR_VERSION, cls.MP_GUI_MINOR_VERSION,
+                cls.MP_DOC)
+
     def update_props(self):
         """Because this is potentially heavy operation and property definitions
         are not likely to be changed during objects lifetime, it's easier to
@@ -340,25 +379,59 @@ class MutaPropClass(object):
                     temp.append(value)
 
         temp.sort(key=lambda x: x.definition_order)
-        self._muta_props = OrderedDict([(prop.prop_id, prop) for prop in temp])
+        setattr(self, self.muta_attr(self.MP_PROPS),
+                OrderedDict([(prop.prop_id, prop) for prop in temp]))
 
     @property
     def props(self):
-        return self._muta_props
+        return getattr(self, self.muta_attr(self.MP_PROPS))
+
+    @property
+    def muta_id(self):
+        return getattr(self, self.muta_attr(self.MP_OBJ_ID))
 
     # Normal properties cannot be used on class variables, so going with get_*
     @classmethod
     def get_class_name(cls):
-        return cls._muta_name
+        return getattr(cls, cls.muta_attr(cls.MP_NAME))
 
     @classmethod
     def get_gui_version(cls):
-        return (cls._muta_gui_major_version, cls._muta_gui_minor_version)
+        return (getattr(cls, cls.muta_attr(cls.MP_GUI_MAJOR_VERSION)),
+                getattr(cls, cls.muta_attr(cls.MP_GUI_MINOR_VERSION)))
 
     @classmethod
     def get_gui_id(cls):
-        return cls._muta_gui_id
+        return getattr(cls, cls.muta_attr(cls.MP_GUI_ID))
+
+    @classmethod
+    def muta_attr(cls, attr):
+        return '_muta_{0}'.format(attr)
 
     def muta_init(self, object_id):
         self.update_props()
-        self._muta_obj_id = object_id
+        setattr(self, self.muta_attr(self.MP_OBJ_ID), object_id)
+
+    def is_muta_ready(self):
+        if (hasattr(self, self.muta_attr(self.MP_OBJ_ID)) and
+                (self.muta_id is not None)):
+            return True
+        else:
+            return False
+
+    def to_dict(self):
+        temp = {}
+        for attr in self._exported_params():
+            if attr == self.MP_DOC:
+                temp[self.MP_DOC] = self.__doc__
+            else:
+                attr_value = getattr(self, self.muta_attr(attr))
+                if attr == self.MP_PROPS:
+                    print(attr_value)
+                    attr_value = [prop.to_dict(obj=self) for prop in
+                                  attr_value.values()]
+
+                temp[attr] = attr_value
+
+        return temp
+

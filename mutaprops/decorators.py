@@ -13,10 +13,13 @@ def mutaprop_class(display_name, gui_id=None, gui_major_version=0,
     def decorator(cls):
         logger.debug("Registered mutaprop class: %s", cls.__name__)
         return type("MutaProp{0}".format(cls.__name__), (cls, MutaPropClass),
-                    {"_muta_name": display_name,
-                     "_muta_gui_id": gui_id,
-                     "_muta_gui_major_version": gui_major_version,
-                     "_muta_gui_minor_version": gui_minor_version,
+                    {MutaPropClass.muta_attr(MutaPropClass.MP_NAME):
+                         display_name,
+                     MutaPropClass.muta_attr(MutaPropClass.MP_GUI_ID): gui_id,
+                     MutaPropClass.muta_attr(
+                         MutaPropClass.MP_GUI_MAJOR_VERSION): gui_major_version,
+                     MutaPropClass.muta_attr(
+                         MutaPropClass.MP_GUI_MINOR_VERSION): gui_minor_version,
                      "__doc__": cls.__doc__})
 
     return decorator
