@@ -73,7 +73,7 @@ def main():
     man = HttpMutaManager()
     man.add_object(test)
     man.add_object(test2, "instance2")
-    man.run()
+    man.run(port=9000)
 
 if __name__ == "__main__":
     main()

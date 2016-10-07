@@ -105,18 +105,18 @@ class HttpMutaManager(object):
                                             text="Resource is not MutaAction.")
 
     def _init_router(self):
-        self._app.router.add_get('/objects', self._get_object_list)
-        self._app.router.add_get('/objects/{obj_id}', self._get_object)
-        self._app.router.add_get('/objects/{obj_id}/props', self._get_props)
-        self._app.router.add_get('/objects/{obj_id}/props/{prop_id}',
+        self._app.router.add_get('/api/objects', self._get_object_list)
+        self._app.router.add_get('/api/objects/{obj_id}', self._get_object)
+        self._app.router.add_get('/api/objects/{obj_id}/props', self._get_props)
+        self._app.router.add_get('/api/objects/{obj_id}/props/{prop_id}',
                                  self._get_prop)
-        self._app.router.add_get('/objects/{obj_id}/props/{prop_id}/value',
+        self._app.router.add_get('/api/objects/{obj_id}/props/{prop_id}/value',
                                  self._get_prop_value)
-        self._app.router.add_put('/objects/{obj_id}/props/{prop_id}',
+        self._app.router.add_put('/api/objects/{obj_id}/props/{prop_id}',
                                  self._set_prop_value)
 
         # http://programmers.stackexchange.com/questions/141410/restful-state-changing-actions
-        self._app.router.add_put('/objects/{obj_id}/props/{prop_id}/action',
+        self._app.router.add_put('/api/objects/{obj_id}/props/{prop_id}/action',
                                  self._set_prop_action)
 
     def add_object(self, muta_object, obj_id=None):

@@ -33,7 +33,12 @@ module.exports = {
   },
   devServer: {
     historyApiFallback: true,
-    noInfo: true
+    noInfo: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9000',
+      }
+    }
   },
   devtool: '#eval-source-map'
 }
