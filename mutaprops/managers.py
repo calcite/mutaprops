@@ -5,6 +5,7 @@ import asyncio
 import urllib.parse
 from aiohttp import web
 from .mutaprops import MutaPropError, MutaPropClass, MutaAction
+from collections import OrderedDict
 
 
 class HttpMutaManager(object):
@@ -16,7 +17,7 @@ class HttpMutaManager(object):
         for details.
         """
         self._app = web.Application(loop=loop)
-        self._muta_objects = {}
+        self._muta_objects = OrderedDict()
         self._init_router()
 
     @asyncio.coroutine

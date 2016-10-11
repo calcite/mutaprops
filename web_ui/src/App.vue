@@ -26,7 +26,7 @@
         </ul>
         <ul class="nav navbar-nav pull-right">
             <li class="dropdown">
-                <a href="#" id="nbAcctDD" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i>Username<i class="icon-sort-down"></i></a>
+                <a href="#" id="nbAcctDD" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i>Help<i class="icon-sort-down"></i></a>
                 <ul class="dropdown-menu pull-right">
                     <li><a href="#">Log Out</a></li>
                 </ul>
@@ -34,65 +34,13 @@
         </ul>
     </nav>
 </div>
-<div id="wrapper">
-  <div id="sidebar-wrapper" class="col-md-2">
-            <div id="sidebar">
-                <ul class="nav list-group">
-                    <li>
-                        <a class="list-group-item" href="#"><i class="icon-home icon-1x"></i>Device #1</a>
-                    </li>
-                    <li>
-                        <a class="list-group-item" href="#"><i class="icon-home icon-1x"></i>Device #2</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div id="main-wrapper" class="col-md-10 pull-right">
-            <div id="main">
-              <div class="page-header">
-                <h3>Admin</h3>
-              </div>
-                      <!--<img src="./assets/logo.png">-->
-        <muta-prop v-for="mutaprop in mutaprops" v-bind="mutaprop"></muta-prop>
-                <ol>
-                    <li v-for="obj in fetchObjects">{{ obj }}</li>
-                </ol>
-            </div>
-        </div>
-</div>
+    <router-view></router-view>
 </div><!-- app -->
 </template>
 
 <script>
-import MutaProp from './MutaProp.vue'
 import Vue from 'vue';
-import Resource from 'vue-resource';
-Vue.use(Resource);
 
-export default {
-    components: { MutaProp },
-        data () {
-        return {
-            mutaprops: [{
-                name: 'Neco 0',
-                value: 'Nejaka hodnota',
-                description: "Popis, jaky svet nevidel"},
-            { name: 'Neco 1', value: 'Nejaka dals hodnota'},
-            { name: 'Neco 2', value: 120}]
-        }
-    },
-    computed: {
-        fetchObjects: function() {
-
-            this.$http.get('api/objects').then((response)=> {
-                console.log(response.body);
-                return response.body;
-            },(response) => {
-                console.log(response)
-            });
-        }
-    }
-}
 </script>
 
 <style>

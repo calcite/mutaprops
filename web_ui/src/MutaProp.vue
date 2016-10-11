@@ -1,11 +1,11 @@
 <template>
 <div id="mutaprop" class="panel panel-default">
   <div class="panel-body">
-      <span><a href="#prop-desc" data-toggle="collapse">{{ name }}</a></span>
+      <span><a :href="'#' + id" data-toggle="collapse">{{ name }}</a></span>
       <span class="pull-right"><input v-model="value"></span>
-      <div id="prop-desc" class="collapse">
+      <div :id="id" class="collapse">
           <hr>
-          <p> {{ description }}</p>
+          <p> {{ doc }}</p>
       </div>
   </div>
 </div>
@@ -13,7 +13,7 @@
 
 <script>
     export default {
-        props: ['name', 'value', 'description'],
+        props: ['id', 'name', 'value', 'doc'],
 //        data () {
 //            return {
 //                propName: 'Name of the property',
