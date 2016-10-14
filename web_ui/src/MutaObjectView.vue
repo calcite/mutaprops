@@ -17,8 +17,14 @@
 
                     </beat-loader>
                 </div>
+                <div v-if="!mutaObjectAvailable">
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Error!</strong> Object is not available.
+                    </div>
+                </div>
                 <muta-prop-list v-bind:prop-list="mutaProps"
-                                v-if="mutaListLoaded"></muta-prop-list>
+                                v-if="mutaListLoaded && mutaObjectAvailable">
+                </muta-prop-list>
             </div>
             <div id="main" v-else>
                 <div class="alert alert-info" role="alert">
@@ -43,7 +49,8 @@ export default {
         return {
             mutaProps: [],
             mutaObjects: [],
-            mutaListLoaded: false
+            mutaListLoaded: false,
+            mutaObjectAvailable: true
         }
     },
 
@@ -53,6 +60,7 @@ export default {
             this.$http.get('api/objects').then((response)=> {
                 console.log(response.body);
                 vm.mutaObjects = response.body;
+                vm.updateRedirect();
             },(response) => {
                 console.log(response)
             });
@@ -62,11 +70,14 @@ export default {
             var vm = this;
             var propResource = this.$resource('api/objects/{id}/props');
             this.mutaListLoaded = false;
+            this.mutaObjectAvailable = true;
             propResource.get({id:objId}).then((response)=> {
                 vm.mutaProps = response.body;
                 vm.mutaListLoaded = true;
             },(response) => {
                 console.log(response)
+                vm.mutaListLoaded = true;
+                vm.mutaObjectAvailable = false;
             });
         },
 
@@ -76,10 +87,18 @@ export default {
             } else {
                 return null;
             }
+        },
+
+        updateRedirect: function() {
+            if ((this.definedObject() == null) && (this.mutaObjects.length == 1)) {
+                console.log("Now we shall redirect")
+                this.$router.push({ name: 'object', params: { id: this.mutaObjects[0]}});
+            }
         }
 
     },
     created: function() {
+        console.log("Called created.");
         this.fetchObjects();
         this.fetchProps(this.definedObject());
         console.log(this.definedObject());
@@ -87,10 +106,17 @@ export default {
 
     watch: {
         $route: function () {
-            this.fetchProps(this.definedObject());
-            console.log("Router Mounted");
+            // TODO: This should go away when websockets are implemented.
+            var dObj = this.definedObject();
+            if (dObj) {
+                this.fetchProps(this.definedObject());
+            }
+
+            if (this.$route.path == '/objects') {
+                this.updateRedirect();
+            }
         }
-    }
+    },
 }
 </script>
 

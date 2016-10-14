@@ -2,7 +2,9 @@
 <div id="mutaprop" class="panel panel-default">
   <div class="panel-body">
       <span><a :href="'#' + id" data-toggle="collapse">{{ name }}</a></span>
-      <span class="pull-right"><input v-model="value"></span>
+      <span class="pull-right">
+      <muta-prop-value v-bind="{ 'value': value }"></muta-prop-value>
+      </span>
       <div :id="id" class="collapse">
           <hr>
           <p> {{ doc }}</p>
@@ -12,13 +14,10 @@
 </template>
 
 <script>
+    import MutaPropValue from './MutaPropValue.vue'
     export default {
-        props: ['id', 'name', 'value', 'doc'],
-//        data () {
-//            return {
-//                propName: 'Name of the property',
-//                propValue: 'A value like no other'
-//            }
-//        }
+        components: { MutaPropValue },
+        props: ['id', 'name', 'value', 'doc', 'type', 'max_val', 'value_type',
+            'min_val'],
     }
 </script>
