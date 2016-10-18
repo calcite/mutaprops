@@ -1,5 +1,5 @@
 <template>
-<div id="mutaprop" class="panel panel-default">
+<div id="mutaprop" class="panel panel-default panel-prop">
   <div class="panel-body">
       <span><a :href="'#' + id" data-toggle="collapse">{{ name }}</a></span>
       <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
@@ -43,3 +43,9 @@
         }
     }
 </script>
+
+<style>
+    .panel-prop {
+        margin: 1em;
+    }
+</style>

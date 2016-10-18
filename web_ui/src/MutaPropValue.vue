@@ -5,7 +5,9 @@
            :min="min_val" :max="max_val" :step="step" :disabled="read_only">
     <input v-if="value_type == 'BOOL'" type="checkbox" v-model="val"
            :disabled="read_only">
-        <button v-if="type == 'action'">Action</button>
+        <button v-if="type == 'action'" v-on:click="actionExecuted">
+            Action
+        </button>
     </span>
 </template>
 
@@ -29,6 +31,18 @@
                 console.log('Value changed.');
                 this.$emit('valuechanged', this.objId, this.id, this.val);
             }, 1000)
+        },
+        methods: {
+            actionExecuted: function() {
+                var vm = this;
+                this.$http.put('api/objects/' + this.objId + '/props/'
+                        + this.id + '/action').then((response)=> {
+                    console.log("Action executed object:" + this.objId +
+                            " action:" + this.id);
+                },(response) => {
+                    console.log(response)
+                });
+            }
         }
     }
 
