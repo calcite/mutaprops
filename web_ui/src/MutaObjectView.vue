@@ -23,6 +23,7 @@
                     </div>
                 </div>
                 <muta-prop-list v-bind:prop-list="mutaProps"
+                                :obj-id="definedObject()"
                                 v-if="mutaListLoaded && mutaObjectAvailable">
                 </muta-prop-list>
             </div>

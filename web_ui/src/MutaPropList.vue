@@ -1,6 +1,7 @@
 <template>
     <div id="muta-prop-list">
-        <muta-prop v-for="mutaprop in propList" v-bind="mutaprop"></muta-prop>
+        <muta-prop v-for="mutaprop in propList" v-bind="mutaprop"
+        :obj-id="objId"></muta-prop>
     </div>
 </template>
 
@@ -9,6 +10,6 @@ import MutaProp from './MutaProp.vue'
 
 export default {
     components: { MutaProp },
-    props: ['propList']
+    props: ['propList', 'objId'],
 }
 </script>
