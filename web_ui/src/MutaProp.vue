@@ -1,12 +1,17 @@
 <template>
 <div id="mutaprop" class="panel panel-default panel-prop">
   <div class="panel-body">
-      <span><a :href="'#' + id" data-toggle="collapse">{{ name }}</a></span>
-      <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
-      'value_type': value_type, 'max_val': max_val, 'min_val': min_val,
-       'step': step, 'read_only': read_only, 'id':id, 'objId': objId}"
-      v-on:valuechanged="updateProp">
-      </muta-prop-value>
+      <form class="form-horizontal">
+          <span class="pull-left control-label">
+              <a :href="'#' + id" data-toggle="collapse">{{ name }}</a>
+          </span>
+          <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
+          'value_type': value_type, 'max_val': max_val, 'min_val': min_val,
+           'step': step, 'read_only': read_only, 'id':id, 'objId': objId,
+           'select': select}"
+          v-on:valuechanged="updateProp">
+          </muta-prop-value>
+      </form>
       <div :id="id" class="collapse">
           <hr>
           <p> {{ doc }}</p>
@@ -23,7 +28,7 @@
     export default {
         components: { MutaPropValue },
         props: ['id', 'name', 'value', 'doc', 'type', 'max_val', 'value_type',
-            'min_val', 'read_only', 'step', 'objId'],
+            'min_val', 'read_only', 'step', 'objId', 'select'],
         data: function() {
             return {
                 currentValue: this.value,

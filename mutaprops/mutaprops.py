@@ -5,6 +5,7 @@ from enum import Enum
 import logging
 import types
 from collections import OrderedDict
+from .utils import BiDict
 
 logger = logging.getLogger(__name__)
 
@@ -154,19 +155,22 @@ class MutaProperty(MutaProp):
     MP_VALUE_TYPE = 'value_type'
     MP_CLASS_TYPE = 'property'
     MP_READ_ONLY = 'read_only'
+    MP_SELECT = 'select'
 
     @classmethod
     def _allowed_kwargs(cls):
         return super()._allowed_kwargs() + (cls.MP_MAXVAL, cls.MP_MINVAL,
                                             cls.MP_STEP, cls.MP_FGET,
                                             cls.MP_FSET, cls.MP_FDEL,
-                                            cls.MP_CHANGE_CALLBACK)
+                                            cls.MP_CHANGE_CALLBACK,
+                                            cls.MP_SELECT)
 
     @classmethod
     def _exported_params(cls):
         return super()._exported_params() + (cls.MP_MINVAL, cls.MP_MAXVAL,
                                              cls.MP_STEP, cls.MP_READ_ONLY,
-                                             cls.MP_VALUE_TYPE)
+                                             cls.MP_VALUE_TYPE,
+                                             cls.MP_SELECT)
 
     def __init__(self, pid, display_name, value_type, **kwargs):
 
@@ -186,6 +190,7 @@ class MutaProperty(MutaProp):
         self._muta_fset = kwargs.get(self.MP_FSET, None)
         self._muta_fdel = kwargs.get(self.MP_FDEL, None)
         self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
+        self._muta_select = BiDict(kwargs.get(self.MP_SELECT, {}))
 
     def _get_kwargs(self):
         temp = {}
@@ -243,7 +248,8 @@ class MutaProperty(MutaProp):
         return type(self)(self._muta_id, self._muta_name, self._muta_value_type,
                           **temp_kwargs)
 
-    def setter(self, func=None, min_val=None, max_val=None, step=None):
+    def setter(self, func=None, min_val=None, max_val=None, step=None,
+               select={}):
         """Decorator function usable in two ways:
             * decorator without arguments::
 
@@ -269,6 +275,7 @@ class MutaProperty(MutaProp):
         temp_kwargs[self.MP_MINVAL] = min_val or self._muta_min_val
         temp_kwargs[self.MP_MAXVAL] = max_val or self._muta_max_val
         temp_kwargs[self.MP_STEP] = step or self._muta_min_val
+        temp_kwargs[self.MP_SELECT] = BiDict(select) or self._muta_select
 
         if func:
             logger.debug("{0}: Setter set".format(self._muta_id))
@@ -301,6 +308,10 @@ class MutaProperty(MutaProp):
         if obj:
             temp[self.MP_VALUE] = self.__get__(obj)
         temp[self.MP_VALUE_TYPE] = self._muta_value_type.name
+
+        # update the select (this would deserve some major rewrite btw)
+        # because now the select serialization is duplicated
+        temp[self.MP_SELECT] = self._muta_select.to_json()
         return temp
 
     def muta_set(self, obj, value):

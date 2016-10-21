@@ -60,6 +60,15 @@ body {
 .navbar-default .navbar-nav>li>a {
     color: #ffffff;
 }
+
+.navbar {
+    border: 0px;
+    -webkit-box-shadow: 0 8px 6px -6px #999;
+    -moz-box-shadow: 0 8px 6px -6px #999;
+    box-shadow: 0 8px 6px -6px #999;
+
+    /* the rest of your styling */
+}
 #wrapper {
     min-height: 100%;
     height: 100%;

@@ -16,6 +16,7 @@ class Neco(object):
         self._name = name
         self._tire_pressure = tire_pressure
         self._trunk_capacity = trunk_capacity
+        self._turbo_enabled = False
 
     @mutaproperty("Speed [km/h]", MutaTypes.INT)
     def speed(self):
@@ -39,17 +40,28 @@ class Neco(object):
     def tire_pressure(self, value):
         self._tire_pressure
 
-    @mutaproperty("Trunk capacity [liter]", MutaTypes.INT)
+    @mutaproperty("Trunk capacity [liter]", MutaTypes.INT,
+                  select={'Small': 500, 'Big': 600})
     def trunk_capacity(self):
         return self._trunk_capacity
 
+    @trunk_capacity.setter
+    def trunk_capacity(self, value):
+        self._trunk_capacity = value
 
+    @mutaproperty("Turbo enabled", MutaTypes.BOOL)
+    def turbo_enabled(self):
+        return self._turbo_enabled
+
+    @turbo_enabled.setter()
+    def turbo_enabled(self, enabled):
+        self._turbo_enabled = enabled
 def main():
 
-    test = Neco(3, 2.23, "Auto1", 540)
-    test2 = Neco(3, 2.23, "Auto2", 650)
+    test = Neco(3, 2.23, "Auto1", 500)
+    test2 = Neco(3, 2.23, "Auto2", 600)
     test.muta_init("instance1")
-    # test2.muta_init("Id instance2")
+    test2.muta_init("Id instance2")
     print("\n")
 
     for prop_id, prop in test.props.items():
