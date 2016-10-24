@@ -1,6 +1,6 @@
 <template>
-    <span class="pull-right">
-        <span class="label label-warning" v-if="valueChanged">{{ value }}</span>
+    <span class="pull-right form-inline">
+        <label class="label label-warning" v-if="valueChanged">{{ value }}</label>
         <template v-if="hasSelect">
             <select  :disabled="read_only" class="form-control" v-model="val">
                 <option v-for="option in selectValues"

@@ -3,7 +3,10 @@
   <div class="panel-body">
       <form class="form-horizontal">
           <span class="pull-left control-label">
-              <a :href="'#' + id" data-toggle="collapse">{{ name }}</a>
+              <template v-if="doc">
+              <a :href="'#' + id" data-toggle="collapse">
+              {{ name }}</a></template>
+              <template v-else>{{ name }}</template>
           </span>
           <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
           'value_type': value_type, 'max_val': max_val, 'min_val': min_val,
@@ -12,7 +15,7 @@
           v-on:valuechanged="updateProp">
           </muta-prop-value>
       </form>
-      <div :id="id" class="collapse">
+      <div :id="id" class="mutaprop-help collapse ">
           <hr>
           <p> {{ doc }}</p>
       </div>
@@ -52,5 +55,8 @@
 <style>
     .panel-prop {
         margin: 1em;
+    }
+    .mutaprop-help {
+        margin-top: 3em;
     }
 </style>
