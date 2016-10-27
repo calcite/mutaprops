@@ -20,6 +20,21 @@ class MutaTypes(Enum):
     REAL = 2
     BOOL = 3
 
+    @classmethod
+    def typecast(cls, muta_type, string_value):
+
+        if muta_type == cls.STRING:
+            return string_value
+        elif muta_type == cls.INT:
+            return int(string_value)
+        elif muta_type == cls.REAL:
+            return float(string_value)
+        elif muta_type == cls.BOOL:
+            return bool(string_value.lower() == 'true')
+        else:
+            raise MutaPropError("Unknown value type {0}".format(muta_type))
+
+
 
 class MutaProp(object):
     """Generic MutaProp object"""
@@ -192,6 +207,10 @@ class MutaProperty(MutaProp):
         self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
         self._muta_select = BiDict(kwargs.get(self.MP_SELECT, {}))
 
+    @property
+    def value_type(self):
+        return self._muta_value_type
+
     def _get_kwargs(self):
         temp = {}
         for kwarg in self._allowed_kwargs():
@@ -218,12 +237,14 @@ class MutaProperty(MutaProp):
         self._muta_fset(obj, value)
 
         # Notify of property change
-        if isinstance(obj, MutaProperty) and obj._is_muta_ready():
-
+        try:
             if different and self._muta_change_callback:
                 logger.debug("Notification of set call for %s on %s",
                              self._muta_name, obj.muta_id)
-                self._muta_change_callback(self, obj)
+                self._muta_change_callback(obj.muta_id, self._muta_id,
+                                           value)
+        except AttributeError:
+            raise Warning("Property change called on unitialized object.")
 
     def __delete__(self, obj):
         if self._muta_fdel is None:
@@ -377,7 +398,7 @@ class MutaPropClass(object):
                 cls.MP_GUI_MAJOR_VERSION, cls.MP_GUI_MINOR_VERSION,
                 cls.MP_DOC)
 
-    def update_props(self):
+    def update_props(self, change_callback=None):
         """Because this is potentially heavy operation and property definitions
         are not likely to be changed during objects lifetime, it's easier to
         cache it.
@@ -388,6 +409,8 @@ class MutaPropClass(object):
             for prop, value in basecls.__dict__.items():
                 if isinstance(value, MutaProp):
                     temp.append(value)
+                if isinstance(value, MutaProperty):
+                    value.register_change_callback(change_callback)
 
         temp.sort(key=lambda x: x.definition_order)
         setattr(self, self.muta_attr(self.MP_PROPS),
@@ -419,9 +442,12 @@ class MutaPropClass(object):
     def muta_attr(cls, attr):
         return '_muta_{0}'.format(attr)
 
-    def muta_init(self, object_id):
-        self.update_props()
+    def muta_init(self, object_id, change_callback=None):
+        self.update_props(change_callback)
         setattr(self, self.muta_attr(self.MP_OBJ_ID), object_id)
+
+    def muta_unregister(self):
+        self.update_props(change_callback=None)
 
     def is_muta_ready(self):
         if (hasattr(self, self.muta_attr(self.MP_OBJ_ID)) and

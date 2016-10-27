@@ -35,7 +35,6 @@ export default {
                     temp.push(prop);
                 }
             }
-            console.log(temp);
             return temp;
         }
     }

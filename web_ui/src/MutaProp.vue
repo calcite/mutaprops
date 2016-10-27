@@ -11,8 +11,7 @@
           <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
           'value_type': value_type, 'max_val': max_val, 'min_val': min_val,
            'step': step, 'read_only': read_only, 'id':id, 'objId': objId,
-           'select': select}"
-          v-on:valuechanged="updateProp">
+           'select': select}">
           </muta-prop-value>
       </form>
       <div :id="id" class="mutaprop-help collapse ">
@@ -25,8 +24,6 @@
 
 <script>
     import Vue from 'vue';
-    import Resource from 'vue-resource';
-    Vue.use(Resource);
     import MutaPropValue from './MutaPropValue.vue'
     export default {
         components: { MutaPropValue },
@@ -37,18 +34,6 @@
                 currentValue: this.value,
             }
         },
-        methods: {
-            updateProp: function(objectId, propertyId, value) {
-                console.log("updateProp called id:" + objectId + " value:" + value);
-                var vm = this;
-                this.$http.put('api/objects/' + objectId + '/props/'
-                        + propertyId + '?value=' + value).then((response)=> {
-                    vm.currentValue = value
-                },(response) => {
-                    console.log(response)
-                });
-            }
-        }
     }
 </script>
 

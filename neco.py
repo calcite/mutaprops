@@ -4,6 +4,8 @@
 from mutaprops import *
 import logging
 import sys
+import time
+import asyncio
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -56,6 +58,32 @@ class Neco(object):
     @turbo_enabled.setter()
     def turbo_enabled(self, enabled):
         self._turbo_enabled = enabled
+
+@asyncio.coroutine
+def speed_updater(obj):
+    while True:
+        obj.speed += 1
+        yield from asyncio.sleep(1)
+
+@asyncio.coroutine
+def trunk_updater(obj):
+    while True:
+        obj.trunk_capacity = 500
+        yield from asyncio.sleep(2)
+        obj.trunk_capacity = 600
+        yield from asyncio.sleep(2)
+
+@asyncio.coroutine
+def device_updater(manager):
+    test3 = Neco(50, 2.8, "TempAuto", 550)
+    while True:
+        manager.add_object(test3, "Instance3")
+        yield from asyncio.sleep(5)
+        manager.remove_object(test3)
+        yield from asyncio.sleep(5)
+
+
+
 def main():
 
     test = Neco(3, 2.23, "Auto1", 500)
@@ -82,10 +110,22 @@ def main():
     test.do_some_action()
     test2.do_some_action()
 
-    man = HttpMutaManager()
+    loop = asyncio.get_event_loop()
+    man = HttpMutaManager("ConCon2", loop=loop)
     man.add_object(test)
     man.add_object(test2, "instance2")
+
+    # asyncio.ensure_future(speed_updater(test))
+    asyncio.ensure_future(trunk_updater(test))
+    # asyncio.ensure_future(device_updater(man))
     man.run(port=9000)
+    # man.run_in_thread(port=9000)
+
+    #Now the fun begins
+    while True:
+        test.speed += 1
+        time.sleep(5)
+
 
 if __name__ == "__main__":
     main()

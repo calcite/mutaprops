@@ -21,12 +21,12 @@ Vue.use(Resource);
 
 
 export default {
-    props: ['objectList', 'selectedObject']
+    props: ['objectList', 'selectedObject'],
 }
 </script>
 
 <style>
-.sidebar-selected{
-    background-color: rgba(0, 51, 148, 0.3);
+#sidebar .sidebar-selected {
+    border-right: 20px solid #003394;
 }
 </style>

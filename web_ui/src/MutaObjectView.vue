@@ -51,15 +51,14 @@ export default {
             mutaProps: [],
             mutaObjects: [],
             mutaListLoaded: false,
-            mutaObjectAvailable: true
+            mutaObjectAvailable: true,
         }
     },
 
     methods: {
         fetchObjects: function() {
-            var vm = this
+            var vm = this;
             this.$http.get('api/objects').then((response)=> {
-                console.log(response.body);
                 vm.mutaObjects = response.body;
                 vm.updateRedirect();
             },(response) => {
@@ -76,7 +75,6 @@ export default {
                 vm.mutaProps = response.body;
                 vm.mutaListLoaded = true;
             },(response) => {
-                console.log(response)
                 vm.mutaListLoaded = true;
                 vm.mutaObjectAvailable = false;
             });
@@ -91,18 +89,22 @@ export default {
         },
 
         updateRedirect: function() {
-            if ((this.definedObject() == null) && (this.mutaObjects.length == 1)) {
-                console.log("Now we shall redirect")
-                this.$router.push({ name: 'object', params: { id: this.mutaObjects[0]}});
+            if ((this.definedObject() == null) &&
+                    (this.mutaObjects.length == 1)) {
+                console.log("Now we shall redirect");
+                this.$router.push({ name: 'object',
+                                    params: { id: this.mutaObjects[0]}});
             }
-        }
+        },
 
     },
     created: function() {
-        console.log("Called created.");
         this.fetchObjects();
         this.fetchProps(this.definedObject());
-        console.log(this.definedObject());
+        var vm = this;
+        window.eventBus.$on('objects_change', function(params) {
+            vm.fetchObjects();
+        });
     },
 
     watch: {
@@ -124,5 +126,36 @@ export default {
 <style>
 #main {
     padding-top: 40px;
+}
+#wrapper {
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    display: inline-block;
+}
+#main-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    padding: 50px 0 0px 0;
+}
+#sidebar-wrapper {
+    height: 100%;
+    padding: 50px 0 0px 0;
+    position: fixed;
+    border-right: 1px solid gray;
+}
+#sidebar {
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+}
+#sidebar .list-group-item {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
 }
 </style>
