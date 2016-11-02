@@ -5,6 +5,7 @@ import asyncio
 import urllib.parse
 from aiohttp import web
 from .mutaprops import MutaPropError, MutaPropClass, MutaAction, MutaTypes
+from .utils import SelectSource
 from collections import OrderedDict
 import threading
 import sockjs
@@ -23,6 +24,7 @@ class HttpMutaManager(object):
     NOTIFICATION_EXTERNAL_CHANGE = 'external_change'
     NOTIFICATION_LOG_MESSAGE = 'log'
     NOTIFICATION_OBJECTS_CHANGE = 'objects_change'
+    NOTIFICATION_SELECT_CHANGE = 'select_change'
 
     def __init__(self, name, loop=None):
         """
@@ -147,6 +149,13 @@ class HttpMutaManager(object):
         self._logger.debug("Property {0} changed value to {1} on {2}".format(
                                                         obj_id, prop_id, value))
 
+    def _select_change(self, obj_id, select_id, value):
+        self._logger.debug("Select %s @ %s changed value to %s" %
+                           (select_id, obj_id, value))
+        self._send_notification(self.NOTIFICATION_SELECT_CHANGE,
+                                objId=obj_id, selectId=select_id,
+                                value=SelectSource.items_dict(value))
+
     def _send_notification(self, msg_type, **kwargs):
         if self._sockjs_manager:
             temp = {'type': msg_type, 'params': kwargs}
@@ -188,13 +197,15 @@ class HttpMutaManager(object):
 
         if muta_object.is_muta_ready():
             if obj_id:
-                muta_object.muta_init(obj_id, self._property_change)
+                muta_object.muta_init(obj_id, self._property_change,
+                                      self._select_change)
         else:
             if not obj_id:
                 raise MutaPropError("MutaObject is not initialized. " +
                                     "Provide obj_id or initialize externally.")
 
-            muta_object.muta_init(obj_id, self._property_change)
+            muta_object.muta_init(obj_id, self._property_change,
+                                  self._select_change)
 
         # Check that we won't have two objects with the same id
         if muta_object.muta_id in self._muta_objects:

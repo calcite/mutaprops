@@ -3,6 +3,7 @@
 
 import logging
 from .mutaprops import MutaProperty, MutaAction, MutaPropClass
+from .utils import MutaSelect
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,8 @@ def mutaprop_class(display_name, gui_id=None, gui_major_version=0,
                          MutaPropClass.MP_GUI_MAJOR_VERSION): gui_major_version,
                      MutaPropClass.muta_attr(
                          MutaPropClass.MP_GUI_MINOR_VERSION): gui_minor_version,
-                     "__doc__": cls.__doc__})
+                     "__doc__": cls.__doc__,
+                     "_orig_cls": cls})
 
     return decorator
 
@@ -33,6 +35,14 @@ def mutaproperty(display_name, value_type, **kwargs):
         prop = MutaProperty(func.__name__, display_name, value_type, **kwargs )
         return prop
     return decorator
+
+
+def mutaselect(func):
+    return MutaSelect(func.__name__, getter=func)
+
+
+def mutaselect_classproperty(func):
+    return MutaSelect(func.__name__, getter=func, class_scope=True)
 
 
 def mutaprop_action(display_name, **kwargs):

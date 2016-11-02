@@ -5,13 +5,9 @@ from enum import Enum
 import logging
 import types
 from collections import OrderedDict
-from .utils import BiDict
+from .utils import MutaPropError, SelectSource, MutaSelect
 
 logger = logging.getLogger(__name__)
-
-
-class MutaPropError(Exception):
-    pass
 
 
 class MutaTypes(Enum):
@@ -33,7 +29,6 @@ class MutaTypes(Enum):
             return bool(string_value.lower() == 'true')
         else:
             raise MutaPropError("Unknown value type {0}".format(muta_type))
-
 
 
 class MutaProp(object):
@@ -205,7 +200,13 @@ class MutaProperty(MutaProp):
         self._muta_fset = kwargs.get(self.MP_FSET, None)
         self._muta_fdel = kwargs.get(self.MP_FDEL, None)
         self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
-        self._muta_select = BiDict(kwargs.get(self.MP_SELECT, {}))
+        temp_select = kwargs.get(self.MP_SELECT, {})
+        logger.debug("Initializing mutaprop %s with selector %s" % (pid, temp_select))
+
+        if isinstance(temp_select, SelectSource):
+            self._muta_select = temp_select
+        else:
+            self._muta_select = SelectSource(temp_select)
 
     @property
     def value_type(self):
@@ -254,11 +255,13 @@ class MutaProperty(MutaProp):
     def __str__(self):
         temp = (
             super().__str__() +
-            "\nProperty {ro} [{valtyp}] ({minval}, {maxval}, {step})".format(
+            "\nProperty {ro} [{valtyp}] ({minval}, {maxval}, {step}, {select})"
+            .format(
                 valtyp=self._muta_value_type,
                 minval=self._muta_min_val,
                 maxval=self._muta_max_val,
                 step=self._muta_step,
+                select=self._muta_select,
                 ro='[Read Only]' if self.is_read_only() else ''))
         return temp
 
@@ -289,14 +292,19 @@ class MutaProperty(MutaProp):
         :param min_value: Min. value for numeric types, min. lenght for Strings
         :param max_value: Max. value for numeric types, max. length for Strings
         :param step: Step increment for numeric types
+        :param select: Selector object to provide user select. A selector can be
+                        either a dict, or list of (label, value) tuples, or
+                        a MutaSelect which provides dict or list of tuples.
+                        If selector is a MutaSelect, the selector list will be
+                        updated during runtime.
 
-        :returns: MetaProp object
+        :returns: MutaProp object
         """
         temp_kwargs = self._get_kwargs()
         temp_kwargs[self.MP_MINVAL] = min_val or self._muta_min_val
         temp_kwargs[self.MP_MAXVAL] = max_val or self._muta_max_val
         temp_kwargs[self.MP_STEP] = step or self._muta_min_val
-        temp_kwargs[self.MP_SELECT] = BiDict(select) or self._muta_select
+        temp_kwargs[self.MP_SELECT] = SelectSource(select) or self._muta_select
 
         if func:
             logger.debug("{0}: Setter set".format(self._muta_id))
@@ -332,7 +340,7 @@ class MutaProperty(MutaProp):
 
         # update the select (this would deserve some major rewrite btw)
         # because now the select serialization is duplicated
-        temp[self.MP_SELECT] = self._muta_select.to_json()
+        temp[self.MP_SELECT] = self._muta_select.to_dict(obj)
         return temp
 
     def muta_set(self, obj, value):
@@ -398,7 +406,7 @@ class MutaPropClass(object):
                 cls.MP_GUI_MAJOR_VERSION, cls.MP_GUI_MINOR_VERSION,
                 cls.MP_DOC)
 
-    def update_props(self, change_callback=None):
+    def update_props(self, change_callback=None, select_update_callback=None):
         """Because this is potentially heavy operation and property definitions
         are not likely to be changed during objects lifetime, it's easier to
         cache it.
@@ -411,6 +419,10 @@ class MutaPropClass(object):
                     temp.append(value)
                 if isinstance(value, MutaProperty):
                     value.register_change_callback(change_callback)
+                if isinstance(value, MutaSelect):
+                    value.register_update_callback(select_update_callback)
+                    if value.class_scoped:
+                        value.set_owner_class(self.__class__)
 
         temp.sort(key=lambda x: x.definition_order)
         setattr(self, self.muta_attr(self.MP_PROPS),
@@ -442,12 +454,13 @@ class MutaPropClass(object):
     def muta_attr(cls, attr):
         return '_muta_{0}'.format(attr)
 
-    def muta_init(self, object_id, change_callback=None):
-        self.update_props(change_callback)
+    def muta_init(self, object_id, change_callback=None,
+                  select_update_callback=None):
+        self.update_props(change_callback, select_update_callback)
         setattr(self, self.muta_attr(self.MP_OBJ_ID), object_id)
 
     def muta_unregister(self):
-        self.update_props(change_callback=None)
+        self.update_props(change_callback=None, select_update_callback=None)
 
     def is_muta_ready(self):
         if (hasattr(self, self.muta_attr(self.MP_OBJ_ID)) and

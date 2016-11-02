@@ -5,7 +5,8 @@
         </label>
         <template v-if="hasSelect">
             <select  :disabled="read_only" class="form-control" v-model="val"
-            :class="inputClass" v-on:change="onUserChange">
+            :class="inputClass" v-on:change="onUserChange"
+                     v-on:click="onSelectClick">
                 <option v-for="option in selectItems"
                         v-bind:value="option.value">
                     {{ option.text }}
@@ -18,10 +19,14 @@
                    :min="min_val" :max="max_val" :step="step"
                    :disabled="read_only" class="form-control"
                    :class="inputClass"
-                   v-on:change="onUserChange">
+                   v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
             <input v-if="value_type == 'BOOL'" type="checkbox" v-model="val"
                    :class="inputClass" v-on:change="onUserChange"
                    :disabled="read_only">
+            <input v-if="value_type == 'STRING'" v-model="val" type="text"
+                   :class="inputClass" :disabled="read_only"
+                   :maxlength="max_val" class="form-control"
+                   v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
             <button v-if="type == 'action'" v-on:click="actionExecuted"
                     type="button"
                     class="btn btn-primary">
@@ -46,14 +51,18 @@
                 labelVal: this.value,
                 inUserChange: false,
                 inObjectChange: false,
+                afterSelectUpdate: false,
                 afterObjectChange: false,
+                inModelUpdate: false,
                 selectItems: [],
+                dynamicSelectId: null,
+                dynamicSelectClassId: null,
             }
         },
         computed: {
             isChangeLabelVisible: function() {
-                return (this.inUserChange || this.afterObjectChange);
-//                return this.value != this.val;
+                return (this.inUserChange || this.afterObjectChange ||
+                this.afterSelectUpdate);
             },
             hasSelect: function() {
                 return !_.isEmpty(this.select);
@@ -65,19 +74,26 @@
                 if (this.inUserChange) {
                     labelType = 'label-warning';
                 }
-                if (this.afterObjectChange) {
+                if (this.afterObjectChange || this.afterSelectUpdate) {
                     labelType = 'label-primary';
                 }
                 return ['label', labelType];
             },
             inputClass: function() {
-                return this.inUserChange?'unset-value':'';
+                if (this.inModelUpdate) {
+                    return 'updating-value';
+                }
+
+                if (this.inUserChange) {
+                    return 'unset-value';
+                }
+
+                return '';
             },
         },
         watch: {
             val: function(value, oldValue) {
                 if (this.inObjectChange) {
-//                    console.log("Edited by object change")
                     this.inObjectChange = false;
                     this.afterObjectChange = true;
                 } else {
@@ -86,15 +102,7 @@
                         this.inUserChange = true;
                         this.afterObjectChange = false;
                     }
-//                    console.log("inUserChange")
                 }
-//                console.log("UserChange: " + this.inUserChange);
-//                console.log("AfterObjectChange " + this.afterObjectChange);
-//                _.debounce(function(value, oldValue) {
-//                    console.log('Value changed.');
-//                    this.inUserChange = true;
-//                    this.$emit('valuechanged', this.objId, this.id, this.val);
-//                }, 1000);
             }
         },
         methods: {
@@ -109,27 +117,46 @@
                 });
             },
             onUserChange: _.debounce(function() {
-//                console.log("User change finished.");
                 // Update the value
-                console.log(this.inUserChange);
-                console.log(this.val);
-//                this.updateValue();
-                console.log("Updating object");
+                console.log("Updating object " + this.objId + " prop " +
+                        this.id + " with value " + this.val);
+                this.afterSelectUpdate = false;
+                this.inModelUpdate = true;
                 var vm = this;
                 this.$http.put('api/objects/' + this.objId + '/props/'
                         + this.id + '?value=' + this.val).then((response)=> {
-//                    vm.currentValue = value
                     vm.inUserChange = false;
                     vm.afterObjectChange = false;
-                    console.log("Value update in object.");
+                    vm.inModelUpdate = false;
+                    console.log("Updated object " + this.objId + " prop " +
+                            this.id + " with value " + this.val);
                 },(response) => {
                     console.log(response);
                 });
             }, 1000),
+            onSelectClick: function() {
+                this.afterSelectUpdate = false;
+            },
+            initSelect: function(selectObj) {
+                if (selectObj.source == 'dynamic') {
+                    this.dynamicSelectId = selectObj.id;
+                    if ('classId' in selectObj) {
+                        this.dynamicSelectClassId = selectObj.classId;
+                    }
+                }
+
+                this.updateSelectItems(selectObj.data);
+            },
             updateSelectItems: function(selectData) {
                 this.selectItems = [];
-                for (let item of this.select) {
-                    this.selectItems.push({ text: item[0], value: item[1]})
+                if (selectData.type == 'map') {
+                    for (let item of selectData.items) {
+                        this.selectItems.push({ text: item[0], value: item[1]})
+                    }
+                } else if (selectData.type == 'list') {
+                    for (let item of selectData.items) {
+                        this.selectItems.push({ text: item, value: item})
+                    }
                 }
             },
             getSelectText: function(selectVal) {
@@ -143,8 +170,7 @@
         created: function() {
             //update select values
             if (this.hasSelect) {
-
-                this.updateSelectItems(this.select);
+                this.initSelect(this.select);
             }
 
             //Prepare notification processing
@@ -157,12 +183,28 @@
                         vm.labelVal = vm.displayValue(params.value);
                         vm.afterObjectChange = true;
                     } else {
-//                        console.log("Not is user change.");
                         vm.labelVal = vm.displayValue(vm.val);
                         vm.val = params.value;
                     }
                 }
             });
+            if (this.dynamicSelectId != null) {
+                window.eventBus.$on('select_change', function(params) {
+                    var temp_id;
+                    if (vm.dynamicSelectClassId != null) {
+                       temp_id = vm.dynamicSelectClassId;
+                    } else {
+                        temp_id = vm.objId;
+                    }
+
+                    if ((params.objId == temp_id) &&
+                            (params.selectId == vm.dynamicSelectId)) {
+                        vm.updateSelectItems(params.value);
+                        vm.labelVal = "Selection Updated";
+                        vm.afterSelectUpdate = true;
+                    }
+                });
+            }
         }
     }
 
@@ -171,5 +213,8 @@
 <style>
     .unset-value {
         background-color: rgba(240,173,78, 0.3);
+    }
+    .updating-value {
+        background-color: rgba(237, 77, 43, 0.3);
     }
 </style>
