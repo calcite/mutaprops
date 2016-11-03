@@ -183,7 +183,7 @@ def main():
     loop = asyncio.get_event_loop()
     man = HttpMutaManager("ConCon2", loop=loop)
     man.add_object(test)
-    man.add_object(test2, "instance 2")
+    man.add_object(test2, "instance #2")
 
     # print(Neco.roof_types)
     #
@@ -196,9 +196,9 @@ def main():
     # test.engine_types = [, ('Nuclear', 30), ('Unicorn', 10)]
 
     # asyncio.ensure_future(speed_updater(test))
-    # asyncio.ensure_future(trunk_updater(test))
-    # asyncio.ensure_future(device_updater(man))
-    # asyncio.ensure_future(select_updater(test))
+    asyncio.ensure_future(trunk_updater(test))
+    asyncio.ensure_future(device_updater(man))
+    asyncio.ensure_future(select_updater(test))
     man.run(port=9000)
     # man.run_in_thread(port=9000)
 
