@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = """Josef Nevrly"""
+__email__ = 'jnevrly@alps.cz'
+__version__ = '0.1.0'
+
 from .decorators import mutaprop_class, mutaproperty, mutaprop_action, \
     mutaselect, mutaselect_classproperty
 from .mutaprops import MutaTypes
