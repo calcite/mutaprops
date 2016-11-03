@@ -22,7 +22,7 @@ class HttpMutaManager(object):
 
     WEB_ASSETS = os.path.join(os.path.dirname(__file__), r"web_ui/dist/")
     INDEX_FILE = open(os.path.join(os.path.dirname(__file__),
-                                   r'web_ui/index.html'), 'rb').read()
+                                   'web_ui\\index.html'), 'rb').read()
     NOTIFICATION_PROPERTY_CHANGE = 'property_change'
     NOTIFICATION_EXTERNAL_CHANGE = 'external_change'
     NOTIFICATION_LOG_MESSAGE = 'log'
