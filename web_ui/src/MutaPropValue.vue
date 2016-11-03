@@ -108,8 +108,9 @@
         methods: {
             actionExecuted: function() {
                 var vm = this;
-                this.$http.put('api/objects/' + this.objId + '/props/'
-                        + this.id + '/action').then((response)=> {
+                this.$http.put('api/objects/' + encodeURIComponent(this.objId) +
+                        '/props/' + encodeURIComponent(this.id) + '/action')
+                        .then((response)=> {
                     console.log("Action executed object:" + this.objId +
                             " action:" + this.id);
                 },(response) => {
@@ -123,8 +124,9 @@
                 this.afterSelectUpdate = false;
                 this.inModelUpdate = true;
                 var vm = this;
-                this.$http.put('api/objects/' + this.objId + '/props/'
-                        + this.id + '?value=' + this.val).then((response)=> {
+                this.$http.put('api/objects/' + encodeURIComponent(this.objId) +
+                        '/props/' + encodeURIComponent(this.id) + '?value=' +
+                        encodeURIComponent(this.val)).then((response)=> {
                     vm.inUserChange = false;
                     vm.afterObjectChange = false;
                     vm.inModelUpdate = false;
