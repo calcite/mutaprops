@@ -11,6 +11,7 @@ import threading
 import sockjs
 import json
 import logging
+import os
 
 
 class MutaManagerError(MutaPropError):
@@ -19,7 +20,9 @@ class MutaManagerError(MutaPropError):
 
 class HttpMutaManager(object):
 
-    INDEX_FILE = open('web_ui/index.html', 'rb').read()
+    WEB_ASSETS = os.path.join(os.path.dirname(__file__), r"web_ui/dist/")
+    INDEX_FILE = open(os.path.join(os.path.dirname(__file__),
+                                   r'web_ui/index.html'), 'rb').read()
     NOTIFICATION_PROPERTY_CHANGE = 'property_change'
     NOTIFICATION_EXTERNAL_CHANGE = 'external_change'
     NOTIFICATION_LOG_MESSAGE = 'log'
@@ -166,7 +169,7 @@ class HttpMutaManager(object):
 
     def _init_router(self):
         self._app.router.add_get('/', self._index)
-        self._app.router.add_static('/dist', r'web_ui/dist/', show_index=True)
+        self._app.router.add_static('/dist', self.WEB_ASSETS, show_index=True)
 
         self._app.router.add_get('/api/appname', self._get_app_name)
         self._app.router.add_get('/api/objects', self._get_object_list)
