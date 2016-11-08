@@ -22,6 +22,12 @@
                         <strong>Error!</strong> Object is not available.
                     </div>
                 </div>
+                <div v-if="mutaObjectAvailable && !objectConnectionExists">
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Connection to object lost!</strong>
+                        Changes will not be applied.
+                    </div>
+                </div>
                 <muta-prop-list v-bind:prop-list="mutaProps"
                                 :obj-id="definedObject()"
                                 v-if="mutaListLoaded && mutaObjectAvailable">
@@ -52,6 +58,7 @@ export default {
             mutaObjects: [],
             mutaListLoaded: false,
             mutaObjectAvailable: true,
+            objectConnectionExists: true,
         }
     },
 
@@ -74,6 +81,7 @@ export default {
             propResource.get({id:objId}).then((response)=> {
                 vm.mutaProps = response.body;
                 vm.mutaListLoaded = true;
+                vm.objectConnectionExists = true;
             },(response) => {
                 vm.mutaListLoaded = true;
                 vm.mutaObjectAvailable = false;
@@ -104,6 +112,14 @@ export default {
         var vm = this;
         window.eventBus.$on('objects_change', function(params) {
             vm.fetchObjects();
+            if (params.objId == vm.definedObject()) {
+                if (params.action == 'removed') {
+                    vm.objectConnectionExists = false;
+                }
+                if (params.action == 'added') {
+                    vm.objectConnectionExists = true;
+                }
+            }
         });
     },
 
@@ -126,6 +142,9 @@ export default {
 <style>
 #main {
     padding-top: 40px;
+}
+.page-header {
+    margin-top: -20px;
 }
 #wrapper {
     min-height: 100%;
