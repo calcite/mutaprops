@@ -161,23 +161,23 @@ def main():
     test2.muta_init("Id instance2")
     print("\n")
 
-    for prop_id, prop in test.props.items():
-        print("{0}\n------".format(prop))
-        print(prop.to_dict(obj=test))
-        print("\n---------")
-
-    print(test.get_class_name())
-
-    test.props['do_some_action'].muta_call(test)
-
-    test.speed = 100
-    test2.speed = 30
-
-    print(test.speed)
-    print(test2.speed)
-
-    test.do_some_action()
-    test2.do_some_action()
+    # for prop_id, prop in test.props.items():
+    #     print("{0}\n------".format(prop))
+    #     print(prop.to_dict(obj=test))
+    #     print("\n---------")
+    #
+    # print(test.get_class_name())
+    #
+    # test.props['do_some_action'].muta_call(test)
+    #
+    # test.speed = 100
+    # test2.speed = 30
+    #
+    # print(test.speed)
+    # print(test2.speed)
+    #
+    # test.do_some_action()
+    # test2.do_some_action()
 
 
     loop = asyncio.get_event_loop()
@@ -196,9 +196,9 @@ def main():
     # test.engine_types = [, ('Nuclear', 30), ('Unicorn', 10)]
 
     # asyncio.ensure_future(speed_updater(test))
-    asyncio.ensure_future(trunk_updater(test))
-    asyncio.ensure_future(device_updater(man))
-    asyncio.ensure_future(select_updater(test))
+    # asyncio.ensure_future(trunk_updater(test))
+    # asyncio.ensure_future(device_updater(man))
+    # asyncio.ensure_future(select_updater(test))
     man.run(port=9000)
     # man.run_in_thread(port=9000)
 

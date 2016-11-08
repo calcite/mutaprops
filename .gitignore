@@ -63,3 +63,7 @@ target/
 
 # Pycharm
 .idea/
+
+# Local files
+/*_test.py
+/neco*
