@@ -57,6 +57,7 @@
                 selectItems: [],
                 dynamicSelectId: null,
                 dynamicSelectClassId: null,
+                changeMode:null,
             }
         },
         computed: {
@@ -76,6 +77,10 @@
                 }
                 if (this.afterObjectChange || this.afterSelectUpdate) {
                     labelType = 'label-primary';
+                }
+                if ((this.changeMode == 'user') ||
+                    (this.changeMode == 'master')) {
+                    labelType = 'label-info';
                 }
                 return ['label', labelType];
             },
@@ -179,6 +184,17 @@
             var vm = this;
             window.eventBus.$on('property_change', function(params) {
                 if ((params.objId == vm.objId) && (params.propId == vm.id)) {
+                    if ((params.eventSource == 'user') && (vm.inModelUpdate)) {
+                        //Ignore this, because it's most likely just a
+                        // notification which was caused by the same user
+                        // There is however a small probability that
+                        // Two user changes from different UI instances
+                        // At the same time would go unnoticed.
+                        // The only solution for this is to ID the
+                        // UI, but that is too much for this release.
+                        return;
+                    }
+                    vm.changeMode = params.eventSource;
                     vm.inObjectChange = true;
                     if (vm.inUserChange) {
                         //Don't change the value just the label

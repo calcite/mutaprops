@@ -95,8 +95,8 @@ export default {
         }, 10000),
 
         processNotification: function(sockMsg) {
-            var msg = JSON.parse(sockMsg);
-            console.log(msg);
+            var msg = sockMsg;
+            console.log(JSON.stringify(msg));
             window.eventBus.$emit(msg.type, msg.params);
         },
 
