@@ -8,7 +8,10 @@
             <i class="icon-reorder"></i>
         </button>
         <a class="navbar-brand" href="#">
-           {{ appName }}
+            <span class="app-logo">
+            <img src="./assets/ALPS_logo.png" class="app-logo">
+            </span>
+            <span class="app-name">{{ appName }}</span>
             <span class="badge">{{ appStatus }}</span>
         </a>
     </div>
@@ -152,6 +155,17 @@ body {
     box-shadow: 0 8px 6px -6px #999;
 
     /* the rest of your styling */
+}
+
+.app-name {
+    padding-top: 3px;
+    display: inline-block;
+}
+
+.app-logo {
+    display: inline-block;
+    margin-right: 8px;
+    float: left;
 }
 #main {
     position: relative;
