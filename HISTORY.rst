@@ -2,6 +2,19 @@
 History
 =======
 
+0.3.0 (2016-11-03)
+------------------
+* Allowed HTML in help blocks
+* Allowed local files/local dir
+
+0.2.2 (2016-11-03)
+------------------
+* Fixed path problem on linux
+
+0.2.1 (2016-11-03)
+------------------
+* Added ALPS logo
+
 0.2.0 (2016-11-03)
 ------------------
 

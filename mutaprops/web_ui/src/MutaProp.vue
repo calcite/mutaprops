@@ -16,7 +16,8 @@
       </form>
       <div :id="id" class="mutaprop-help collapse ">
           <hr>
-          <p> {{ doc }}</p>
+          <div class="help-block" v-html="doc"></div>
+          <!--<p> {{ doc }}</p>-->
       </div>
   </div>
 </div>

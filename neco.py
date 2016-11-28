@@ -28,7 +28,13 @@ class Neco(object):
 
     @mutaproperty("Speed [km/h]", MutaTypes.INT)
     def speed(self):
-        """Speed measured by the odometer."""
+        """Speed measured by the odometer. It goes like this:
+        <ul>
+            <li> <b> Either it worls</b> - then all is fine</li>
+            <li> <b> Or it doesn't</b> - then we are all fucked </li>
+        </ul>
+        <img src="local/outputs.png">
+        """
         return self._speed
 
     @speed.setter
@@ -181,7 +187,7 @@ def main():
 
 
     loop = asyncio.get_event_loop()
-    man = HttpMutaManager("ConCon2", loop=loop)
+    man = HttpMutaManager("ConCon2", loop=loop, local_dir="temp/")
     man.add_object(test)
     man.add_object(test2, "instance #2")
 

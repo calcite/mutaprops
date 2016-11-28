@@ -46,17 +46,19 @@ class HttpMutaManager(object):
     EVENT_SOURCE_MASTER = "master"
     EVENT_SOURCE_USER = "user"
 
-    def __init__(self, name, loop=None, master=None):
+    def __init__(self, name, loop=None, master=None, local_dir=None):
         """
         :param loop: Asyncio execution loop,
         :param master: Address of the master controller (http://masteraddr:port)
         see `aiohttp.web.Application <http://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.run_app>`_
         for details.
+        :param local_dir: Optional directory with files that shall be served
+        over HTTP.
         """
         self._name = name
         self._app = web.Application(loop=loop)
         self._muta_objects = OrderedDict()
-        self._init_router()
+        self._init_router(local_dir=local_dir)
         self._sockjs_manager = None
         self._logger = logging.getLogger(HttpMutaManager.__class__.__name__)
         self._manager_proxies = {}
@@ -288,9 +290,12 @@ class HttpMutaManager(object):
     def _index(self, request):
         return web.Response(body=self.INDEX_FILE, content_type='text/html')
 
-    def _init_router(self):
+    def _init_router(self, local_dir=None):
         self._app.router.add_get('/', self._index)
         self._app.router.add_static('/dist', self.WEB_ASSETS, show_index=True)
+
+        if local_dir:
+            self._app.router.add_static('/local', local_dir, show_index=True)
 
         self._app.router.add_get('/api/appname', self._get_app_name)
         self._app.router.add_get('/api/objects', self._get_object_list)

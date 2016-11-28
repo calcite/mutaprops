@@ -67,3 +67,5 @@ target/
 # Local files
 /*_test.py
 /neco*
+temp/
+
