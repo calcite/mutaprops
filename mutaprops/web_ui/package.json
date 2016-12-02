@@ -12,6 +12,7 @@
     "bimap": "0.0.15",
     "bootstrap": "^3.3.7",
     "lodash": "^4.16.4",
+    "slug": "^0.9.1",
     "sockjs-client": "^1.1.1",
     "vue": "^2.0.1",
     "vue-resource": "^1.0.3",

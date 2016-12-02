@@ -1,30 +1,72 @@
 <template>
     <div id="muta-prop-list">
-        <div class="panel panel-default panel-proplist">
-            <div class="panel-heading">Actions</div>
-            <muta-prop v-for="mutaprop in actionList" v-bind="mutaprop"
-                       :obj-id="objId"></muta-prop>
-        </div>
-        <div class="panel panel-default panel-proplist">
-            <div class="panel-heading">Properties</div>
-            <muta-prop v-for="mutaprop in propertyList" v-bind="mutaprop"
-            :obj-id="objId"></muta-prop>
-        </div>
+        <template v-if="displayType === 'actionsProps'">
+        <!--<template v-if="true">-->
+            <muta-prop-panel :prop-list="actionList" :obj-id="objId" heading="Actions">
+            </muta-prop-panel>
+            <muta-prop-panel :prop-list="propertyList" :obj-id="objId" heading="Properties">
+            </muta-prop-panel>
+        </template>
+        <!--<template v-if="displayType === 'hierarchy'">-->
+        <template v-if="true">
+            <muta-prop-panel :prop-list="hierarchyList.otherActions" :obj-id="objId"
+                             heading="Actions">
+
+            </muta-prop-panel>
+            <muta-prop-panel v-for="(panel, name) in hierarchyList.hierarchy" :prop-list="panel"
+                             :obj-id="objId" :heading="name">
+            </muta-prop-panel>
+            <muta-prop-panel :prop-list="hierarchyList.otherProps" :obj-id="objId"
+                             heading="Other Properties">
+
+            </muta-prop-panel>
+        </template>
     </div>
 </template>
 
 <script>
-import MutaProp from './MutaProp.vue'
+import MutaPropPanel from './MutaPropPanel.vue'
 
 export default {
-    components: { MutaProp },
-    props: ['propList', 'objId'],
+    components: { MutaPropPanel },
+    props: ['propList', 'objId', 'displayType'],
     computed: {
         propertyList: function() {
             return this.propByType('property');
             },
         actionList: function() {
             return this.propByType('action');
+        },
+        hierarchyList: function() {
+            let temp = {}
+            temp.otherProps = []
+            temp.otherActions = []
+            temp.hierarchy = {}
+
+            console.log("Computing like stupid!")
+
+            for (let prop of this.propList) {
+                if (prop.hierarchy != null) {
+                    if (prop.hierarchy in temp.hierarchy) {
+                        console.log("Adding a prop")
+                        temp.hierarchy[prop.hierarchy].push(prop)
+                    } else {
+                        console.log("Creating a panel")
+                        temp.hierarchy[prop.hierarchy] = []
+                    }
+                } else {
+                    switch (prop.type) {
+                        case 'property':
+                            temp.otherProps.push(prop)
+                            break
+                        case 'action':
+                            temp.otherActions.push(prop)
+                            break
+                    }
+                }
+            }
+            console.log(temp)
+            return temp
         }
     },
     methods: {
@@ -41,12 +83,3 @@ export default {
 }
 </script>
 
-<style>
-     .panel-proplist {
-         border-color: #949494;
-     }
-    .panel-proplist>.panel-heading {
-        background-color: #949494;
-        color: #ffffff;
-    }
-</style>

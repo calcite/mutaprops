@@ -26,7 +26,7 @@ class Neco(object):
         self._engine_types = [('Diesel', 20), ('Gasoline', 30), ('Hybrid', 10)]
         self._roof_type = 45
 
-    @mutaproperty("Speed [km/h]", MutaTypes.INT)
+    @mutaproperty("Speed [km/h]", MutaTypes.INT, hierarchy='Vehicle control')
     def speed(self):
         """Speed measured by the odometer. It goes like this:
         <ul>
@@ -41,7 +41,7 @@ class Neco(object):
     def speed(self, value):
         self._speed = value
 
-    @mutaproperty("Vehicle name", MutaTypes.STRING)
+    @mutaproperty("Vehicle name", MutaTypes.STRING, hierarchy='Vehicle data')
     def name(self):
         return self._name
 
@@ -53,7 +53,8 @@ class Neco(object):
     def do_some_action(self):
         print("{0}: Doing some action!".format(self._name))
 
-    @mutaproperty("Tire pressure [Bar]", MutaTypes.REAL)
+    @mutaproperty("Tire pressure [Bar]", MutaTypes.REAL,
+                  hierarchy='Vehicle data')
     def tire_pressure(self):
         """Lowest measured tire pressure across all four wheels."""
         return self._tire_pressure
@@ -63,7 +64,7 @@ class Neco(object):
         self._tire_pressure
 
     @mutaproperty("Trunk capacity [liter]", MutaTypes.INT,
-                  select={'Small': 500, 'Big': 600})
+                  select={'Small': 500, 'Big': 600}, hierarchy='Vehicle data')
     def trunk_capacity(self):
         return self._trunk_capacity
 
@@ -71,7 +72,7 @@ class Neco(object):
     def trunk_capacity(self, value):
         self._trunk_capacity = value
 
-    @mutaproperty("Turbo enabled", MutaTypes.BOOL)
+    @mutaproperty("Turbo enabled", MutaTypes.BOOL, hierarchy='Vehicle control')
     def turbo_enabled(self):
         return self._turbo_enabled
 
@@ -79,7 +80,7 @@ class Neco(object):
     def turbo_enabled(self, enabled):
         self._turbo_enabled = enabled
 
-    @mutaproperty("Body type", MutaTypes.STRING)
+    @mutaproperty("Body type", MutaTypes.STRING, hierarchy='Vehicle data')
     def body_type(self):
         return self._body_type
 
@@ -95,7 +96,8 @@ class Neco(object):
     def engine_types(self, values):
         self._engine_types = values
 
-    @mutaproperty("Engine type", MutaTypes.INT, select=engine_types)
+    @mutaproperty("Engine type", MutaTypes.INT, select=engine_types,
+                  hierarchy='Vehicle data')
     def engine_type(self):
         return self._engine_type
 
@@ -111,7 +113,7 @@ class Neco(object):
     def set_roof_types(cls, values):
         cls._roof_types = values
 
-    @mutaproperty("Roof type", MutaTypes.INT)
+    @mutaproperty("Roof type", MutaTypes.INT, hierarchy='Vehicle data')
     def roof_type(self):
         return self._roof_type
 
