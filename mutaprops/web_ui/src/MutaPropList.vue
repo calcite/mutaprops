@@ -52,7 +52,7 @@ export default {
                         temp.hierarchy[prop.hierarchy].push(prop)
                     } else {
                         console.log("Creating a panel")
-                        temp.hierarchy[prop.hierarchy] = []
+                        temp.hierarchy[prop.hierarchy] = [prop,]
                     }
                 } else {
                     switch (prop.type) {

@@ -3,7 +3,7 @@
 
 __author__ = """Josef Nevrly"""
 __email__ = 'jnevrly@alps.cz'
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 from .decorators import mutaprop_class, mutaproperty, mutaprop_action, \
     mutaselect, mutaselect_classproperty
