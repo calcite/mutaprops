@@ -20,9 +20,9 @@
                    :disabled="read_only" class="form-control"
                    :class="inputClass"
                    v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
-            <input v-if="value_type == 'BOOL'" type="checkbox" v-model="val"
-                   :class="inputClass" v-on:change="onUserChange"
-                   :disabled="read_only">
+            <input v-if="value_type == 'BOOL'" type="checkbox" data-toggle="toggle"
+                   v-model="val" :class="inputClass" v-on:change="onUserChange"
+                   :disabled="read_only" :id="id">
             <input v-if="value_type == 'STRING'" v-model="val" type="text"
                    :class="inputClass" :disabled="read_only"
                    :maxlength="max_val" class="form-control"
@@ -223,6 +223,27 @@
                     }
                 });
             }
+        },
+        mounted: function () {
+            // If we use toggle instead of checkbox, we have to manually service all stuff
+            // that Vue is doing automatically by itself, because the way toggle is made,
+            // it destroys all Vue bindings...
+            if (this.value_type === 'BOOL') {
+                var self = this;
+                var toggle = $("input[type='checkbox']#" + this.id);
+                toggle.bootstrapToggle();
+                toggle.change(function () {
+                    console.log("Checkbox changed");
+                    self.val = toggle.prop('checked');
+                    self.onUserChange();
+//                    console.log(toggle.prop('checked'));
+                    //TODO: check why is it registering as remoteChange and not userChange
+                    //TODO: add automatic update on remote change
+                    //TODO: Add selection between checkbox and Toggle
+                })
+
+            }
+
         }
     }
 

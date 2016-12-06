@@ -2,6 +2,10 @@
 History
 =======
 
+0.4.0 (2016-12-06)
+------------------
+* One level hierarchy (panels) and experimental support of toggle buttons instead of checkboxes.
+
 0.3.0 (2016-11-03)
 ------------------
 * Allowed HTML in help blocks

@@ -36,4 +36,8 @@ export default {
         background-color: #949494;
         color: #ffffff;
     }
+
+    .panel-heading>a {
+        color: #ffffff;
+    }
 </style>
