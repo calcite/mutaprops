@@ -2,6 +2,10 @@
 History
 =======
 
+0.4.1 (2016-12-06)
+------------------
+* Fixed bug with displaying first prop in hierarchy panel.
+
 0.4.0 (2016-12-06)
 ------------------
 * One level hierarchy (panels) and experimental support of toggle buttons instead of checkboxes.
