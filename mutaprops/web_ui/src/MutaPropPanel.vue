@@ -12,7 +12,7 @@
 </template>
 <script>
 import _ from 'lodash'
-import slug from 'slug'
+import slugify from 'slugify'
 import MutaProp from './MutaProp.vue'
 export default {
     components: { MutaProp },
@@ -22,7 +22,7 @@ export default {
             return !(_.isEmpty(this.propList))
         },
         collapseName: function() {
-            return slug(this.heading) + '-collapse'
+            return slugify(this.heading) + '-collapse'
         }
     }
 }
