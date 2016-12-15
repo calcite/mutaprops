@@ -82,8 +82,7 @@
                         <span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title" id="myModalLabel">Help</h4>
                 </div>
-                <div class="modal-body">
-                    Here should be help.
+                <div class="modal-body" v-html="helpDoc">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -104,6 +103,7 @@ export default {
         return {
             sock: null,
             appName: 'Connecting...',
+            helpDoc: 'No help, sorry...',
             appStatus: '',
             logs: [],
             logFilterString: '',
@@ -181,6 +181,15 @@ export default {
             });
         },
 
+        fetchHelpDoc: function() {
+            var vm = this;
+            this.$http.get('api/help').then((response)=> {
+                vm.helpDoc = response.body;
+            },(response) => {
+                console.log(response)
+            });
+        },
+
         clearLogs: function () {
             for (let i = this.logs.length; i > 0; i--) {
                 this.logs.pop();
@@ -211,6 +220,7 @@ export default {
 
     created: function() {
         this.fetchAppName();
+        this.fetchHelpDoc();
         this.sockjsSetup();
     }
 }

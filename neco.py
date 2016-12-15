@@ -30,11 +30,11 @@ class Neco(object):
     @mutaproperty("Speed [km/h]", MutaTypes.INT, hierarchy='Vehicle control')
     def speed(self):
         """Speed measured by the odometer. It goes like this:
-        <ul>
-            <li> <b> Either it worls</b> - then all is fine</li>
-            <li> <b> Or it doesn't</b> - then we are all fucked </li>
-        </ul>
-        <img src="local/outputs.png">
+
+        - *Either it worls* - then all is fine
+        - *Or it doesn't* - then we are all fucked
+
+        .. image:: local/outputs.png
         """
         return self._speed
 
@@ -205,6 +205,12 @@ def main():
     test2 = Neco(3, 2.23, "Auto2", 600)
     test.muta_init("instance 1")
     test2.muta_init("Id instance2")
+    help =  """ This is some help, but not much:
+
+            - I don't know why
+            - THis is pointless
+
+            """
     print("\n")
 
     # for prop_id, prop in test.props.items():
@@ -228,6 +234,7 @@ def main():
 
     loop = asyncio.get_event_loop()
     man = HttpMutaManager("ConCon2", loop=loop, local_dir="temp/",
+                          help_doc=utils.rest_to_html(help),
                           proxy_log=_logger)
     man.add_object(test)
     man.add_object(test2, "instance #2")

@@ -58,7 +58,7 @@ class HttpMutaManager(object):
                                **record.__dict__)
 
     def __init__(self, name, loop=None, master=None, local_dir=None,
-                 proxy_log=None, log_level=logging.NOTSET):
+                 help_doc = None, proxy_log=None, log_level=logging.NOTSET):
         """
         :param loop: Asyncio execution loop,
         :param master: Address of the master controller (http://masteraddr:port)
@@ -79,6 +79,7 @@ class HttpMutaManager(object):
         self._host_addr = None
         self._host_port = None
         self._proxy_logger = None
+        self._help_doc = help_doc
 
         # Logging
         if proxy_log is None:
@@ -93,6 +94,10 @@ class HttpMutaManager(object):
     @asyncio.coroutine
     def _get_app_name(self, request):
         return web.Response(text=self._name)
+
+    @asyncio.coroutine
+    def _get_help_doc(self, request):
+        return web.Response(text=self._help_doc)
 
     @asyncio.coroutine
     def _get_object_list(self, request):
@@ -321,6 +326,7 @@ class HttpMutaManager(object):
             self._app.router.add_static('/local', local_dir, show_index=True)
 
         self._app.router.add_get('/api/appname', self._get_app_name)
+        self._app.router.add_get('/api/help', self._get_help_doc)
         self._app.router.add_get('/api/objects', self._get_object_list)
         self._app.router.add_get('/api/objects/{obj_id}', self._get_object)
         self._app.router.add_get('/api/objects/{obj_id}/props', self._get_props)

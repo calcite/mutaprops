@@ -5,7 +5,7 @@ from enum import Enum
 import logging
 import types
 from collections import OrderedDict
-from .utils import MutaPropError, SelectSource, MutaSelect
+from .utils import MutaPropError, SelectSource, MutaSelect, rest_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +142,8 @@ class MutaProp(object):
         temp = {}
         for attr in self._exported_params():
             if attr == self.MP_DOC:
-                temp[self.MP_DOC] = self.__doc__
+                # Docstring is here converted from reST to HTML
+                temp[self.MP_DOC] = rest_to_html(self.__doc__)
             elif attr == self.MP_TYPE:
                 temp[self.MP_TYPE] = self.MP_CLASS_TYPE
             else:
@@ -481,7 +482,7 @@ class MutaPropClass(object):
         temp = {}
         for attr in self._exported_params():
             if attr == self.MP_DOC:
-                temp[self.MP_DOC] = self.__doc__
+                temp[self.MP_DOC] = rest_to_html(self.__doc__)
             else:
                 attr_value = getattr(self, self.muta_attr(attr))
                 if attr == self.MP_PROPS:

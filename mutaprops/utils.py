@@ -3,6 +3,8 @@
 
 from collections import OrderedDict
 import logging
+import inspect
+from docutils.core import publish_parts
 
 logger = logging.getLogger(__name__)
 
@@ -280,3 +282,16 @@ class MutaSelect(object):
                 self._update_callback(obj.muta_id, self._id, value)
         except AttributeError:
             raise Warning("Mutaselect change on unitialized object.")
+
+def rest_to_html(docstring):
+    """ Converts reSTructured text from docstrings to HTML.
+
+    As it uses quite strange docutils implementations, it adds some unnecessary
+    clutter to the HTML <div class="document"> etc.
+
+    """
+    if docstring:
+        return publish_parts(inspect.cleandoc(docstring),
+                             writer_name='html')['html_body']
+    else:
+        return None
