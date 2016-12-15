@@ -166,6 +166,7 @@ class MutaProperty(MutaProp):
     MP_CLASS_TYPE = 'property'
     MP_READ_ONLY = 'read_only'
     MP_SELECT = 'select'
+    MP_TOGGLE = 'toggle'
 
     @classmethod
     def _allowed_kwargs(cls):
@@ -173,14 +174,14 @@ class MutaProperty(MutaProp):
                                             cls.MP_STEP, cls.MP_FGET,
                                             cls.MP_FSET, cls.MP_FDEL,
                                             cls.MP_CHANGE_CALLBACK,
-                                            cls.MP_SELECT)
+                                            cls.MP_SELECT, cls.MP_TOGGLE)
 
     @classmethod
     def _exported_params(cls):
         return super()._exported_params() + (cls.MP_MINVAL, cls.MP_MAXVAL,
                                              cls.MP_STEP, cls.MP_READ_ONLY,
                                              cls.MP_VALUE_TYPE,
-                                             cls.MP_SELECT)
+                                             cls.MP_SELECT, cls.MP_TOGGLE)
 
     def __init__(self, pid, display_name, value_type, **kwargs):
 
@@ -207,6 +208,8 @@ class MutaProperty(MutaProp):
             self._muta_select = temp_select
         else:
             self._muta_select = SelectSource(temp_select)
+
+        self._muta_toggle = kwargs.get(self.MP_TOGGLE, None)
 
     @property
     def value_type(self):
@@ -341,6 +344,11 @@ class MutaProperty(MutaProp):
         # update the select (this would deserve some major rewrite btw)
         # because now the select serialization is duplicated
         temp[self.MP_SELECT] = self._muta_select.to_dict(obj)
+
+        # Remove toggle parameter for non-bool items
+        if self._muta_value_type != MutaTypes.BOOL:
+            temp.pop(self.MP_TOGGLE)
+
         return temp
 
     def muta_set(self, obj, value):

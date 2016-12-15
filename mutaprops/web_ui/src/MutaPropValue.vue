@@ -22,7 +22,7 @@
                    v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
             <input v-if="value_type == 'BOOL'" type="checkbox" data-toggle="toggle"
                    v-model="val" :class="inputClass" v-on:change="onUserChange"
-                   :disabled="read_only" :id="id">
+                   :disabled="read_only" :id="validId">
             <input v-if="value_type == 'STRING'" v-model="val" type="text"
                    :class="inputClass" :disabled="read_only"
                    :maxlength="max_val" class="form-control"
@@ -39,12 +39,13 @@
 <script>
     import Vue from 'vue';
     import _ from 'lodash';
+    import slugify from 'slugify';
     import Resource from 'vue-resource';
     Vue.use(Resource);
 
     export default {
         props: ['max_val', 'value_type', 'min_val', 'value', 'type', 'step',
-            'read_only', 'id', 'objId', 'select'],
+            'read_only', 'id', 'objId', 'select', 'toggle'],
         data: function() {
             return {
                 val: this.value,
@@ -65,6 +66,9 @@
                 return (this.inUserChange || this.afterObjectChange ||
                 this.afterSelectUpdate);
             },
+            validId : function() {
+                return slugify(this.id);
+            },
             hasSelect: function() {
                 return !_.isEmpty(this.select);
             },
@@ -82,7 +86,7 @@
                     (this.changeMode == 'master')) {
                     labelType = 'label-info';
                 }
-                return ['label', labelType];
+                return ['label', 'label-valchange', labelType];
             },
             inputClass: function() {
                 if (this.inModelUpdate) {
@@ -203,6 +207,13 @@
                     } else {
                         vm.labelVal = vm.displayValue(vm.val);
                         vm.val = params.value;
+
+                        //For the infamous bootstrap toggle
+                        if (vm.value_type === 'BOOL') {
+                            var toggle = $("input[type='checkbox']#" +
+                                vm.validId);
+                            toggle.bootstrapToggle(vm.val ? 'on' : 'off');
+                        }
                     }
                 }
             });
@@ -230,15 +241,14 @@
             // it destroys all Vue bindings...
             if (this.value_type === 'BOOL') {
                 var self = this;
-                var toggle = $("input[type='checkbox']#" + this.id);
-                toggle.bootstrapToggle();
+                var toggle = $("input[type='checkbox']#" + this.validId);
+                console.log("Creating toggle");
+                console.log(this.toggle);
+                toggle.bootstrapToggle( this.toggle );
                 toggle.change(function () {
-                    console.log("Checkbox changed");
                     self.val = toggle.prop('checked');
                     self.onUserChange();
-//                    console.log(toggle.prop('checked'));
                     //TODO: check why is it registering as remoteChange and not userChange
-                    //TODO: add automatic update on remote change
                     //TODO: Add selection between checkbox and Toggle
                 })
 
@@ -255,5 +265,9 @@
     }
     .updating-value {
         background-color: rgba(237, 77, 43, 0.3);
+    }
+
+    .label-valchange {
+        margin-right: 8px;
     }
 </style>

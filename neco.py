@@ -25,6 +25,7 @@ class Neco(object):
         self._engine_type = 20
         self._engine_types = [('Diesel', 20), ('Gasoline', 30), ('Hybrid', 10)]
         self._roof_type = 45
+        self._jesus_fish = False
 
     @mutaproperty("Speed [km/h]", MutaTypes.INT, hierarchy='Vehicle control')
     def speed(self):
@@ -72,13 +73,25 @@ class Neco(object):
     def trunk_capacity(self, value):
         self._trunk_capacity = value
 
-    @mutaproperty("Turbo enabled", MutaTypes.BOOL, hierarchy='Vehicle control')
+    @mutaproperty("Turbo enabled", MutaTypes.BOOL,
+                  toggle={'on': 'Enabled', 'off': 'Disabled'},
+                  hierarchy='Vehicle control')
     def turbo_enabled(self):
         return self._turbo_enabled
 
     @turbo_enabled.setter()
     def turbo_enabled(self, enabled):
         self._turbo_enabled = enabled
+
+    @mutaproperty("Jesus fish", MutaTypes.BOOL,
+                  hierarchy='Vehicle control')
+    def jesus_fish(self):
+        """ It's just a fish, Jesus!"""
+        return self._jesus_fish
+
+    @jesus_fish.setter()
+    def jesus_fish(self, value):
+        self._jesus_fish = value
 
     @mutaproperty("Body type", MutaTypes.STRING, hierarchy='Vehicle data')
     def body_type(self):
@@ -115,12 +128,15 @@ class Neco(object):
 
     @mutaproperty("Roof type", MutaTypes.INT, hierarchy='Vehicle data')
     def roof_type(self):
+        """ Roof types are just amazing! """
         return self._roof_type
 
     @roof_type.setter(select=roof_types)
     def roof_type(self, value):
         self._roof_type = value
 
+
+_logger = logging.getLogger("Pokus")
 
 @asyncio.coroutine
 def speed_updater(obj):
@@ -136,6 +152,15 @@ def trunk_updater(obj):
         obj.trunk_capacity = 600
         yield from asyncio.sleep(2)
 
+
+@asyncio.coroutine
+def turbo_updater(obj):
+    while True:
+        obj.turbo_enabled = True
+        yield from asyncio.sleep(2)
+        obj.turbo_enabled = False
+        yield from asyncio.sleep(2)
+
 @asyncio.coroutine
 def device_updater(manager):
     test3 = Neco(50, 2.8, "TempAuto", 550)
@@ -145,6 +170,19 @@ def device_updater(manager):
         manager.remove_object(test3)
         yield from asyncio.sleep(5)
 
+@asyncio.coroutine
+def log_updater():
+    i = 0
+    while True:
+        _logger.debug("Neco loguju %d" % i)
+        yield from asyncio.sleep(0.5)
+        _logger.error("Stalo se neco hrozneho %d" % i)
+        yield from asyncio.sleep(0.5)
+        _logger.warning("Toto nedopadne dobre %d" % i)
+        yield from asyncio.sleep(0.5)
+        _logger.info("Jako by se nestalo %d" % i)
+        yield from asyncio.sleep(0.5)
+        i += 1
 
 @asyncio.coroutine
 def select_updater(obj):
@@ -189,7 +227,8 @@ def main():
 
 
     loop = asyncio.get_event_loop()
-    man = HttpMutaManager("ConCon2", loop=loop, local_dir="temp/")
+    man = HttpMutaManager("ConCon2", loop=loop, local_dir="temp/",
+                          proxy_log=_logger)
     man.add_object(test)
     man.add_object(test2, "instance #2")
 
@@ -207,6 +246,8 @@ def main():
     # asyncio.ensure_future(trunk_updater(test))
     # asyncio.ensure_future(device_updater(man))
     # asyncio.ensure_future(select_updater(test))
+    # asyncio.ensure_future(log_updater())
+    asyncio.ensure_future(turbo_updater(test))
     man.run(port=9000)
     # man.run_in_thread(port=9000)
 
