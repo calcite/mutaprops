@@ -46,7 +46,19 @@ class HttpMutaManager(object):
     EVENT_SOURCE_MASTER = "master"
     EVENT_SOURCE_USER = "user"
 
-    def __init__(self, name, loop=None, master=None, local_dir=None):
+    class WsHandler(logging.Handler):
+        """ Handler to forward logging messages over websocket."""
+
+        def __init__(self, msg_callback, level=logging.NOTSET):
+            self._msg_callback = msg_callback
+            super().__init__(level)
+
+        def emit(self, record):
+            self._msg_callback(HttpMutaManager.NOTIFICATION_LOG_MESSAGE,
+                               **record.__dict__)
+
+    def __init__(self, name, loop=None, master=None, local_dir=None,
+                 proxy_log=None, log_level=logging.NOTSET):
         """
         :param loop: Asyncio execution loop,
         :param master: Address of the master controller (http://masteraddr:port)
@@ -66,6 +78,17 @@ class HttpMutaManager(object):
         self._master_manager = master
         self._host_addr = None
         self._host_port = None
+        self._proxy_logger = None
+
+        # Logging
+        if proxy_log is None:
+            # Get root logger
+            self._proxy_logger = logging.getLogger()
+        else:
+            self._proxy_logger = proxy_log
+
+        self._proxy_logger.addHandler(HttpMutaManager.WsHandler(
+                            self._send_notification, log_level))
 
     @asyncio.coroutine
     def _get_app_name(self, request):
