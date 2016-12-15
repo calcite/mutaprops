@@ -8,14 +8,17 @@ module.exports = {
     publicPath: '/dist/',
     filename: 'build.js'
   },
-  resolveLoader: {
-    root: path.join(__dirname, 'node_modules'),
-  },
+  // resolveLoader: {
+  //   root: path.join(__dirname, 'node_modules'),
+  // },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.vue$/,
-        loader: 'vue'
+        loader: 'vue',
+        options: {
+          postcss: [require('postcss-cssnext')()],
+        }
       },
       {
         test: /\.js$/,
@@ -30,6 +33,11 @@ module.exports = {
         }
       }
     ]
+  },
+  resolve: {
+    alias: {
+      'vue$': 'vue/dist/vue'
+    }
   },
   devServer: {
     historyApiFallback: true,
