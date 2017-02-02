@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class MutaTypes(Enum):
+    """ Representation of allowed MutaProperty types.
+    """
     STRING = 0
     INT = 1
     REAL = 2
@@ -18,6 +20,9 @@ class MutaTypes(Enum):
 
     @classmethod
     def typecast(cls, muta_type, string_value):
+        """ Cast string representation of the value to the particular
+            python type.
+        """
 
         if muta_type == cls.STRING:
             return string_value
@@ -32,28 +37,45 @@ class MutaTypes(Enum):
 
 
 class MutaProp(object):
-    """Generic MutaProp object"""
+    """ Abstract class defining a generic MutaProp object.
+        Such object holds basic information about a "property" of a
+        MutaProp-accessible class (such as ID and human-readable name)
+        as well as position of such property in the hierarchy of all properties.
+
+        Each MutaProp implementation is expected to overload following:
+         * :meth:`~mutaprops.MutaProp._allowed_kwargs` class method,
+            defining kwargs which are used/allowed in the constructor.
+         * :meth:`~mutaprops.MutaProp._exported_kwargs` class method, i
+            defining which parameters are exported during serialization
+            of the MutaProp.
+         * :const:`~mutaprops.MutaProp.MP_CLASS_TYPE` constant defining
+            the MutaProp class for GUI use (the utilization of this parameter
+            is GUI-implementation-dependent).
+    """
 
     __definition_counter = 0
-    MP_ID = 'id'
-    MP_NAME = 'name'
-    MP_PRIORITY = 'priority'
-    MP_HIERARCHY = 'hierarchy'
-    MP_DEFINITION_ORDER = 'deford'
-    MP_DOC = 'doc'
-    MP_VIEW = 'view'
-    MP_TYPE = 'type'
+    MP_ID = 'id'    # ID of the prop (usually matches the property name)
+    MP_NAME = 'name'  # Human-readable name
+    MP_PRIORITY = 'priority'  # GUI display priority
+    MP_HIERARCHY = 'hierarchy'  # Hierarchy position of a prop
+    MP_DEFINITION_ORDER = 'deford'  #  Definition order for default ordering
+    MP_DOC = 'doc'  # Prop's docstring
+    MP_VIEW = 'view'  # Alternative view widget assignment where applicable
+    MP_TYPE = 'type'  # Type of the Prop (Property/Action/Source)
+
     MP_CLASS_TYPE = 'abstract'
 
     # I'm using classmethods instead of class constants because of easier
     # inheritance
     @classmethod
     def _allowed_kwargs(cls):
+        """ Define kwargs which are allowed in the constructor."""
         return cls.MP_PRIORITY, cls.MP_HIERARCHY, cls.MP_DEFINITION_ORDER, \
                cls.MP_DOC, cls.MP_VIEW
 
     @classmethod
     def _exported_params(cls):
+        """ Define which parameters are exported/serialized to the GUI"""
         return (cls.MP_ID, cls.MP_NAME, cls.MP_PRIORITY, cls.MP_HIERARCHY,
                 cls.MP_DEFINITION_ORDER,  cls.MP_DOC, cls.MP_VIEW, cls.MP_TYPE)
 
@@ -68,7 +90,9 @@ class MutaProp(object):
                             Hierarchy path in the GUI
             * `deford` :    int
                             Modifies definition order. This is normally defined
-                            automatically based on the decorator calls
+                            automatically based on the decorator calls.
+                            If priority is not used, the order at which
+                            MutaProps are listed in GUI is defined by deford.
             * `view` :      string
                             identifier of recommended GUI view type
         """
@@ -94,6 +118,12 @@ class MutaProp(object):
         self.__doc__ = kwargs.get(self.MP_DOC, None)
 
     def _assign_kwarg(self, kwarg_key, kwarg_value):
+        """ Converts
+
+        :param kwarg_key:
+        :param kwarg_value:
+        :return:
+        """
         if kwarg_key in self._allowed_kwargs():
             if kwarg_key == 'doc':
                 self.__doc__ = kwarg_value
@@ -147,7 +177,8 @@ class MutaProp(object):
             elif attr == self.MP_TYPE:
                 temp[self.MP_TYPE] = self.MP_CLASS_TYPE
             else:
-                temp[attr] = getattr(self, '_muta_{0}'.format(attr))
+                temp[attr] = MutaSource.serialize(
+                                        getattr(self, '_muta_{0}'.format(attr)))
 
         return temp
 
@@ -155,19 +186,23 @@ class MutaProp(object):
 class MutaProperty(MutaProp):
     """Emulate PyProperty_Type() in Objects/descrobject.c"""
 
+    # Value limits and step
     MP_MAXVAL = 'max_val'
     MP_MINVAL = 'min_val'
     MP_STEP = 'step'
-    MP_FGET = 'fget'
-    MP_FSET = 'fset'
-    MP_FDEL = 'fdel'
-    MP_CHANGE_CALLBACK = 'change_callback'
-    MP_VALUE = 'value'  # This is not used directly in this class
-    MP_VALUE_TYPE = 'value_type'
+
+    MP_FGET = 'fget'  # Getter function
+    MP_FSET = 'fset'  # Setter function
+    MP_FDEL = 'fdel'  # Deleter function
+    MP_CHANGE_CALLBACK = 'change_callback'  # Callback called on change
+
+    MP_VALUE = 'value'  # Value of the MutaProperty
+    MP_VALUE_TYPE = 'value_type'  # Type of the value (INT/BOOL...)
+    MP_READ_ONLY = 'read_only'  # GUI Read only setting
+    MP_SELECT = 'select'  # Iterable set of possible values
+    MP_TOGGLE = 'toggle'  # GUI setting for toggle-switch representation
+
     MP_CLASS_TYPE = 'property'
-    MP_READ_ONLY = 'read_only'
-    MP_SELECT = 'select'
-    MP_TOGGLE = 'toggle'
 
     @classmethod
     def _allowed_kwargs(cls):
@@ -185,6 +220,48 @@ class MutaProperty(MutaProp):
                                              cls.MP_SELECT, cls.MP_TOGGLE)
 
     def __init__(self, pid, display_name, value_type, **kwargs):
+        """
+        :param pid:  Mutaprop identifier
+        :param display_name:  Mutaprop name to be displayed in GUI
+        :param value_type:  MutaType value
+        :param kwargs:  Optional attibutes
+            *  `priority` : int
+                            Display priority, higher numbers are displayed first
+            * `hierarchy` : string
+                            Hierarchy path in the GUI
+            * `deford` :    int
+                            Modifies definition order. This is normally defined
+                            automatically based on the decorator calls.
+                            If priority is not used, the order at which
+                            MutaProps are listed in GUI is defined by deford.
+            * `view` :      string
+                            identifier of recommended GUI view type
+            * `min_val` :   int
+                            For numerical type, minimum possible value,
+                            for string type, minimal length of string
+            * `max_val` :   int
+                            For numerical type, maximum possible value,
+                            for string type, maximal length of string
+            * `step` :      int
+                            For numerical type, step interval between values,
+                            for other types ignored
+            * `fget` :      function
+                            Getter function
+            * `fset` :      function
+                            Setter function
+            * `fdel` :      function
+                            Deleter function
+            * `read_only` : bool
+                            Sets GUI element to read-only state. Automatically
+                            set to true when setter function is not provided.
+            * `select` :    List or Dict
+                            Set of allowed values. GUI will offer just this set.
+            * `toggle` :    Dict of format {'on': 'Some-on-label',
+                                            'off': 'Some-off-label'}
+                            If set, a toggle-switch like control will be used
+                            as GUI. Valid only for BOOL types, otherwise
+                            ignored.
+        """
 
         doc = kwargs.get(self.MP_DOC, None)
         fget = kwargs.get(self.MP_FGET, None)
@@ -202,13 +279,14 @@ class MutaProperty(MutaProp):
         self._muta_fset = kwargs.get(self.MP_FSET, None)
         self._muta_fdel = kwargs.get(self.MP_FDEL, None)
         self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
-        temp_select = kwargs.get(self.MP_SELECT, {})
-        logger.debug("Initializing mutaprop %s with selector %s" % (pid, temp_select))
+        self._muta_select = kwargs.get(self.MP_SELECT, {})
+        # logger.debug("Initializing mutaprop %s with selector %s" % (pid, temp_select))
 
-        if isinstance(temp_select, SelectSource):
-            self._muta_select = temp_select
-        else:
-            self._muta_select = SelectSource(temp_select)
+        # # TODO: rewrite to mutasource
+        # if isinstance(temp_select, SelectSource):
+        #     self._muta_select = temp_select
+        # else:
+        #     self._muta_select = SelectSource(temp_select)
 
         self._muta_toggle = kwargs.get(self.MP_TOGGLE, None)
 
@@ -270,6 +348,9 @@ class MutaProperty(MutaProp):
         return temp
 
     def getter(self, fget):
+        """ Decorator function for constructing MutaProperty on getter function.
+            Takes all ``kwargs`` from :meth:`~mutaprops.MutaProperty.__init__`
+        """
         logger.debug("{0}: Getter set".format(self._muta_id))
         temp_kwargs = self._get_kwargs()
         temp_kwargs[self.MP_FGET] = fget
@@ -278,7 +359,7 @@ class MutaProperty(MutaProp):
 
     def setter(self, func=None, min_val=None, max_val=None, step=None,
                select={}):
-        """Decorator function usable in two ways:
+        """ Decorator function usable in two ways:
             * decorator without arguments::
 
                 @some_metaprop.setter
@@ -293,8 +374,8 @@ class MutaProperty(MutaProp):
                     pass
 
         :param func: Is only for internal decorator use, don't use it
-        :param min_value: Min. value for numeric types, min. lenght for Strings
-        :param max_value: Max. value for numeric types, max. length for Strings
+        :param min_val: Min. value for numeric types, min. lenght for Strings
+        :param max_val: Max. value for numeric types, max. length for Strings
         :param step: Step increment for numeric types
         :param select: Selector object to provide user select. A selector can be
                         either a dict, or list of (label, value) tuples, or
@@ -308,7 +389,7 @@ class MutaProperty(MutaProp):
         temp_kwargs[self.MP_MINVAL] = min_val or self._muta_min_val
         temp_kwargs[self.MP_MAXVAL] = max_val or self._muta_max_val
         temp_kwargs[self.MP_STEP] = step or self._muta_min_val
-        temp_kwargs[self.MP_SELECT] = SelectSource(select) or self._muta_select
+        temp_kwargs[self.MP_SELECT] = select or self._muta_select
 
         if func:
             logger.debug("{0}: Setter set".format(self._muta_id))
@@ -344,7 +425,7 @@ class MutaProperty(MutaProp):
 
         # update the select (this would deserve some major rewrite btw)
         # because now the select serialization is duplicated
-        temp[self.MP_SELECT] = self._muta_select.to_dict(obj)
+        #temp[self.MP_SELECT] = self._muta_select.to_dict(obj)
 
         # Remove toggle parameter for non-bool items
         if self._muta_value_type != MutaTypes.BOOL:
@@ -360,6 +441,163 @@ class MutaProperty(MutaProp):
 
     def is_read_only(self):
         return self._muta_fset is None
+
+
+class MutaSource(MutaProperty):
+    """ MutaSource is generalized MutaProperty, which is not visible in the
+    GUI, however it's changes are reflected in the GUI.
+    MutaSource does not need to define display name and value type - any
+    serializable type goes.
+    MutaSource can also be a class-property.
+    MutaSources cannot be directly changed from the GUI layer, however they
+     can be changed indirectly from the model/MutaObject itself.
+
+    Implementation Note:
+    --------------------
+
+    In theory :class:`~mutaprops.MutaProperty` should be child of
+    :class:`~mutaprops.MutaSource`, in practice the differences are of such
+    character it doesn't make it more convenient to implement
+    :class:`~mutaprops.MutaSource` as child of :class:`~mutaprops.MutaProperty`.
+    """
+    MP_CLASS_TYPE = 'source'
+
+    MP_CLASS_SCOPE = 'class_scope'
+    MP_OWNER_CLASS = 'owner_class'
+
+
+    @classmethod
+    def _allowed_kwargs(cls):
+        return cls.MP_DOC, cls.MP_CLASS_SCOPE, cls.MP_FGET, cls.MP_FSET, \
+               cls.MP_FDEL, cls.MP_CHANGE_CALLBACK, cls.MP_OWNER_CLASS
+
+    @classmethod
+    def _exported_params(cls):
+        return cls.MP_ID, cls.MP_DOC, cls.MP_TYPE
+
+    @classmethod
+    def serialize(cls, value):
+        if isinstance(value, cls):
+            return {cls.MP_TYPE: cls.MP_CLASS_TYPE,
+                    cls.MP_ID: value._muta_id}
+        else:
+            return value
+
+
+    def __init__(self, pid, display_name, value_type, **kwargs):
+        """ Init signature is kept for convenience, however
+            `display_name` and `value_type` are ignored.
+
+        :param kwargs:  Optional attibutes
+            * `fget` :      function
+                            Getter function
+            * `fset` :      function
+                            Setter function
+            * `fdel` :      function
+                            Deleter function
+            * `class_scope` : bool
+                            Set to true if the exposed property is a property
+                            of a class.
+        """
+
+        doc = kwargs.get(self.MP_DOC, None)
+        fget = kwargs.get(self.MP_FGET, None)
+
+        if doc is None and fget is not None:
+            kwargs[self.MP_DOC] = fget.__doc__
+
+        MutaProp.__init__(self, pid, pid, **kwargs)
+
+        self._muta_fget = kwargs.get(self.MP_FGET, None)
+        self._muta_fset = kwargs.get(self.MP_FSET, None)
+        self._muta_fdel = kwargs.get(self.MP_FDEL, None)
+        self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
+        self._muta_class_scope = kwargs.get(self.MP_CLASS_SCOPE, False)
+        self._muta_owner_class = kwargs.get(self.MP_OWNER_CLASS, None)
+
+        self._muta_value_type = None
+
+    @property
+    def class_scoped(self):
+        """
+        :return: True if the MutaSource is classproperty.
+        """
+        return self._muta_class_scope
+
+    @property
+    def owner_class(self):
+        """ In case of classproperty source, returns the owner class."""
+        return self._muta_owner_class
+
+    def set_owner_class(self, defining_class):
+        self._muta_owner_class = defining_class
+
+    # Overload to disable
+    def muta_set(self, obj, value):
+        raise MutaPropError("Source cannot be set frou GUI layer.")
+
+    def __str__(self):
+        return "MutaSource ID: {pid}, Description: {doc}".format(
+            pid=self._muta_id,
+            doc=self.__doc__
+        )
+
+    def __call__(self, value):
+        if self._muta_class_scope:
+            self.__set__(None, value)
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            if self._muta_class_scope:
+                obj = objtype
+            else:
+                raise MutaPropError("Object not specified.")
+
+        if self._muta_fget is None:
+            raise MutaPropError("No getter defined.")
+
+        logger.debug("Getting value for %s", self._muta_name)
+        return self._muta_fget(obj)
+
+    def setter(self, func):
+        """ Get setter method.
+        :param func:
+        :return: MutaSource object.
+        """
+        temp_kwargs = self._get_kwargs()
+
+        logger.debug("{0}: Setter set".format(self._muta_id))
+        temp_kwargs[self.MP_FSET] = func
+        return type(self)(self._muta_id, self._muta_name,
+                          self._muta_value_type, **temp_kwargs)
+
+    def setter_classproperty(self, func):
+
+        if not self._muta_class_scope:
+            raise MutaPropError("Initializing class property setter" +
+                                " for property without class scope.")
+
+        def class_scoped_setter(cls, value):
+
+            different = self._muta_fget(cls) != value
+            func(cls, value)
+
+            # Notify of property change
+            if different and self._muta_change_callback:
+                logger.debug("Notification of set on mutaselect on %s", id(cls))
+                self._muta_change_callback(id(cls), self._muta_id,
+                                           value)
+
+        return classmethod(class_scoped_setter)
+
+    def to_dict(self, obj=None):
+        temp = MutaProp.to_dict(self)
+        logger.debug("Serializing mutasource: {0}".format(temp))
+
+        if obj:
+            temp[self.MP_VALUE] = self.__get__(obj)
+
+        return temp
 
 
 class MutaAction(MutaProp):
@@ -425,13 +663,18 @@ class MutaPropClass(object):
         for basecls in type(self).mro():
             for prop, value in basecls.__dict__.items():
                 if isinstance(value, MutaProp):
+                    logger.debug("Adding mutaprop: {0}".format(value.prop_id))
                     temp.append(value)
                 if isinstance(value, MutaProperty):
                     value.register_change_callback(change_callback)
-                if isinstance(value, MutaSelect):
-                    value.register_update_callback(select_update_callback)
+                if isinstance(value, MutaSource):
                     if value.class_scoped:
                         value.set_owner_class(self.__class__)
+
+                # if isinstance(value, MutaSelect):
+                #     value.register_update_callback(select_update_callback)
+                #     if value.class_scoped:
+                #         value.set_owner_class(self.__class__)
 
         temp.sort(key=lambda x: x.definition_order)
         setattr(self, self.muta_attr(self.MP_PROPS),

@@ -263,7 +263,6 @@ class MutaSelect(object):
             else:
                 raise MutaPropError("Object not specified.")
 
-
         if self._getter is None:
             raise MutaPropError("No select getter defined.")
         # logger.debug("Getting value for %s", self._muta_name)

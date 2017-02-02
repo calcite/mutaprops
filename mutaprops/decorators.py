@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from .mutaprops import MutaProperty, MutaAction, MutaPropClass
+from .mutaprops import MutaProperty, MutaAction, MutaPropClass, MutaSource
 from .utils import MutaSelect
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,19 @@ def mutaproperty(display_name, value_type, **kwargs):
         prop = MutaProperty(func.__name__, display_name, value_type, **kwargs )
         return prop
     return decorator
+
+
+def mutasource(func=None, class_scope=False):
+    if func:
+        logger.debug("Registered mutasource: %s", func.__name__)
+        return MutaSource(func.__name__, None, None,  fget=func,
+                          class_scope=False)
+    else:
+        def decorator(fget):
+            logger.debug("Registered mutasource: %s", fget.__name__)
+            return MutaSource(fget.__name__, None, None,
+                              class_scope=class_scope, fget=fget)
+        return decorator
 
 
 def mutaselect(func):
