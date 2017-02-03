@@ -149,23 +149,23 @@
                 this.afterSelectUpdate = false;
             },
             initSelect: function(selectObj) {
-                if (selectObj.source == 'dynamic') {
-                    this.dynamicSelectId = selectObj.id;
-                    if ('classId' in selectObj) {
-                        this.dynamicSelectClassId = selectObj.classId;
-                    }
-                }
+//                if (selectObj.source == 'dynamic') {
+//                    this.dynamicSelectId = selectObj.id;
+//                    if ('classId' in selectObj) {
+//                        this.dynamicSelectClassId = selectObj.classId;
+//                    }
+//                }
 
-                this.updateSelectItems(selectObj.data);
+                this.updateSelectItems(selectObj);
             },
             updateSelectItems: function(selectData) {
                 this.selectItems = [];
-                if (selectData.type == 'map') {
-                    for (let item of selectData.items) {
-                        this.selectItems.push({ text: item[0], value: item[1]})
-                    }
-                } else if (selectData.type == 'list') {
-                    for (let item of selectData.items) {
+                if (!Array.isArray(selectData)) {
+                    _.forOwn(selectData, (value, key) => {
+                        this.selectItems.push({ text: key, value: value})
+                    });
+                } else {
+                    for (let item of selectData) {
                         this.selectItems.push({ text: item, value: item})
                     }
                 }

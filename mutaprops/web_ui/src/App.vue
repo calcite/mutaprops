@@ -167,6 +167,9 @@ export default {
                     $('#log-area').scrollTop(logArea.scrollHeight);
                 }
 
+            } else if (msg.type == 'objects_change') {
+              // Just reload all objects, vuex takes care of the rest.
+              this.fetchObjects();
             } else {
                 window.eventBus.$emit(msg.type, msg.params);
             }
@@ -185,6 +188,16 @@ export default {
             var vm = this;
             this.$http.get('api/help').then((response)=> {
                 vm.helpDoc = response.body;
+            },(response) => {
+                console.log(response)
+            });
+        },
+
+        fetchObjects: function() {
+            var vm = this;
+            this.$http.get('api/objects').then((response)=> {
+              console.log('Storing the muta Objects')
+                vm.$store.commit('set_muta_objects', response.body);
             },(response) => {
                 console.log(response)
             });
@@ -221,6 +234,7 @@ export default {
     created: function() {
         this.fetchAppName();
         this.fetchHelpDoc();
+        this.fetchObjects();
         this.sockjsSetup();
     }
 }

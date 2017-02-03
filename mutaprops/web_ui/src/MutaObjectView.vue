@@ -1,15 +1,16 @@
 <template>
     <div id="wrapper">
-        <muta-object-list v-if="mutaObjects.length > 1"
-                          v-bind:object-list="mutaObjects"
-                          v-bind:selected-object="definedObject()">
+        <muta-object-list v-if="$store.getters.mutaObjectCount > 1"
+                          v-bind:object-list="$store.state.mutaObjects"
+                          v-bind:selected-object="viewedObjectId">
         </muta-object-list>
         <!--TODO: Solve for no object selected and only one object in the list -->
         <div id="main-wrapper"
-             :class="[(mutaObjects.length>1)?'col-md-10':'col-md-12', 'pull-right']">
-            <div id="main" v-if="definedObject()">
-                <div class="page-header" v-if="mutaObjects.length == 1">
-                    <h3>{{ definedObject() }}</h3>
+             :class="[($store.getters.mutaObjectCount > 1)?'col-md-10':'col-md-12',
+             'pull-right']">
+            <div id="main" v-if="viewedObjectId">
+                <div class="page-header">
+                    <h3>{{ viewedObjectId }}</h3>
                 </div>
                 <div v-if="!mutaListLoaded" class="text-center">
                     <beat-loader :loading="!mutaListLoaded"
@@ -29,7 +30,7 @@
                     </div>
                 </div>
                 <muta-prop-list v-bind:prop-list="mutaProps"
-                                :obj-id="definedObject()"
+                                :obj-id="viewedObjectId"
                                 v-if="mutaListLoaded && mutaObjectAvailable">
                 </muta-prop-list>
             </div>
@@ -47,6 +48,7 @@ import MutaObjectList from './MutaObjectList.vue'
 import MutaPropList from './MutaPropList.vue'
 import Vue from 'vue';
 import Resource from 'vue-resource';
+import _ from 'lodash';
 import BeatLoader from 'vue-spinner/src/BeatLoader.vue';
 Vue.use(Resource);
 
@@ -61,17 +63,19 @@ export default {
             objectConnectionExists: true,
         }
     },
-
+    computed: {
+      viewedObjectId: function () {
+          if (this.$route.params.hasOwnProperty('id')) {
+              return this.$route.params.id;
+          } else {
+              return null;
+          }
+      },
+      objectConnectionExists: function () {
+        return _.includes(this.$store.state.mutaObjects, this.viewedObjectId);
+      }
+    },
     methods: {
-        fetchObjects: function() {
-            var vm = this;
-            this.$http.get('api/objects').then((response)=> {
-                vm.mutaObjects = response.body;
-                vm.updateRedirect();
-            },(response) => {
-                console.log(response)
-            });
-        },
 
         fetchProps: function(objId) {
             var vm = this;
@@ -88,53 +92,48 @@ export default {
             });
         },
 
-        definedObject: function() {
-            if (this.$route.params.hasOwnProperty('id')) {
-                return this.$route.params.id;
-            } else {
-                return null;
-            }
-        },
-
         updateRedirect: function() {
-            if ((this.definedObject() == null) &&
-                    (this.mutaObjects.length == 1)) {
+            if ((this.viewedObjectId == null) &&
+                    (this.$store.getters.mutaObjectCount == 1)) {
                 console.log("Now we shall redirect");
                 this.$router.push({ name: 'object',
-                                    params: { id: this.mutaObjects[0]}});
+                                    params: {
+                                        id: this.$store.state.mutaObjects[0]
+                                            }
+                                  });
             }
         },
 
     },
     created: function() {
-        this.fetchObjects();
-        this.fetchProps(this.definedObject());
+//        this.fetchObjects();
         var vm = this;
-        window.eventBus.$on('objects_change', function(params) {
-            vm.fetchObjects();
-            if (params.objId == vm.definedObject()) {
-                if (params.action == 'removed') {
-                    vm.objectConnectionExists = false;
-                }
-                if (params.action == 'added') {
-                    vm.objectConnectionExists = true;
-                }
+        this.$store.watch(function (state) {
+          return state.mutaObjects;
+        }, () => {
+            if ((vm.$store.state.selectedObjectId == null) &&
+                (vm.$store.getters.mutaObjectCount == 1)) {
+                vm.$router.push({
+                    name: 'object',
+                    params: {id: vm.$store.state.mutaObjects[0]}
+                });
             }
         });
+        this.$store.commit('set_selected_object_id', this.viewedObjectId);
+        this.fetchProps(this.viewedObjectId);
     },
 
     watch: {
         $route: function () {
-            // TODO: This should go away when websockets are implemented.
-            var dObj = this.definedObject();
+            var dObj = this.viewedObjectId;
             if (dObj) {
-                this.fetchProps(this.definedObject());
+                this.fetchProps(this.viewedObjectId);
             }
 
             if (this.$route.path == '/objects') {
                 this.updateRedirect();
             }
-        }
+        },
     },
 }
 </script>
