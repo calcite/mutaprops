@@ -477,12 +477,11 @@ class MutaSource(MutaProperty):
 
     @classmethod
     def serialize(cls, value):
-        if isinstance(value, cls):
-            return {cls.MP_TYPE: cls.MP_CLASS_TYPE,
+        if isinstance(value, MutaProperty):
+            return {cls.MP_TYPE: value.MP_CLASS_TYPE,
                     cls.MP_ID: value._muta_id}
         else:
             return value
-
 
     def __init__(self, pid, display_name, value_type, **kwargs):
         """ Init signature is kept for convenience, however

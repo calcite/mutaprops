@@ -97,6 +97,7 @@
 import Vue from 'vue';
 import SockJS from 'sockjs-client';
 import _ from 'lodash';
+import { globalPropId } from './utils';
 
 export default {
     data: function() {
@@ -168,10 +169,15 @@ export default {
                 }
 
             } else if (msg.type == 'objects_change') {
-              // Just reload all objects, vuex takes care of the rest.
-              this.fetchObjects();
+                // Just reload all objects, vuex takes care of the rest.
+                this.fetchObjects();
+            } else if (msg.type == 'property_change') {
+                // Deal with incoming property change notifications
+                this.$store.commit('muta_prop_change', msg.params);
             } else {
-                window.eventBus.$emit(msg.type, msg.params);
+                //TODO: Remove this if not necessary
+                window.eventBus.$emit(msg.type, msg.params)
+            };
             }
         },
 

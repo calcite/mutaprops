@@ -25,11 +25,20 @@
 </template>
 
 <script>
-import MutaPropPanel from './MutaPropPanel.vue'
+import Vue from 'vue';
+import MutaPropPanel from './MutaPropPanel.vue';
+import Vuex from 'vuex';
+
+Vue.use(Vuex);
 
 export default {
     components: { MutaPropPanel },
     props: ['propList', 'objId', 'displayType'],
+    data: function () {
+      return {
+        objectStore: null
+      }
+    },
     computed: {
         propertyList: function() {
             return this.propByType('property');
@@ -79,6 +88,20 @@ export default {
             }
             return temp;
         }
+    },
+    created: function () {
+      this.objectStore = new Vuex.Store({
+        state: {
+          props: [],
+          propVals: {},
+        },
+          mutations: {
+            set_props (state, props) {
+              state.props = props;
+              //Update prop Vals
+            }
+          }
+      });
     }
 }
 </script>

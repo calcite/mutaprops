@@ -77,15 +77,31 @@ export default {
     },
     methods: {
 
-        fetchProps: function(objId) {
+//        fetchProps: function(objId) {
+//            var vm = this;
+//            var propResource = this.$resource('api/objects/{id}/props');
+//            this.mutaListLoaded = false;
+//            this.mutaObjectAvailable = true;
+//            propResource.get({id:objId}).then((response)=> {
+//                vm.mutaProps = response.body;
+//                vm.mutaListLoaded = true;
+//                vm.objectConnectionExists = true;
+//            },(response) => {
+//                vm.mutaListLoaded = true;
+//                vm.mutaObjectAvailable = false;
+//            });
+//        },
+
+        fetchObject: function(objId) {
             var vm = this;
-            var propResource = this.$resource('api/objects/{id}/props');
+            var objResource = this.$resource('api/objects/{id}');
             this.mutaListLoaded = false;
             this.mutaObjectAvailable = true;
-            propResource.get({id:objId}).then((response)=> {
-                vm.mutaProps = response.body;
+            objResource.get({id:objId}).then((response)=> {
+                vm.mutaProps = response.body.props;
                 vm.mutaListLoaded = true;
                 vm.objectConnectionExists = true;
+                vm.$store.commit('set_muta_object', response.body);
             },(response) => {
                 vm.mutaListLoaded = true;
                 vm.mutaObjectAvailable = false;
@@ -120,14 +136,15 @@ export default {
             }
         });
         this.$store.commit('set_selected_object_id', this.viewedObjectId);
-        this.fetchProps(this.viewedObjectId);
+//        this.fetchProps(this.viewedObjectId);
+        this.fetchObject(this.viewedObjectId);
     },
 
     watch: {
         $route: function () {
             var dObj = this.viewedObjectId;
             if (dObj) {
-                this.fetchProps(this.viewedObjectId);
+                this.fetchObject(this.viewedObjectId);
             }
 
             if (this.$route.path == '/objects') {

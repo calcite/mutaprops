@@ -5,7 +5,7 @@
                 {{ heading }}</a>
         </div>
         <div :id="collapseName" class="panel-collapse collapse in">
-            <muta-prop v-for="mutaprop in propList" v-bind="mutaprop"
+            <muta-prop v-for="mutaprop in propList" :prop-object="mutaprop"
                        :obj-id="objId"></muta-prop>
         </div>
     </div>
@@ -19,10 +19,10 @@ export default {
     props: ['propList', 'objId', 'heading'],
     computed: {
         hasContent: function() {
-            return !(_.isEmpty(this.propList))
+            return !(_.isEmpty(this.propList));
         },
         collapseName: function() {
-            return slugify(this.heading) + '-collapse'
+            return slugify(this.heading) + '-collapse';
         }
     }
 }

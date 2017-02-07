@@ -4,6 +4,8 @@ import MutaObjectView from './MutaObjectView.vue';
 import VueRouter from 'vue-router';
 import Vuex from 'vuex';
 import 'babel-polyfill';
+import { globalPropId, isDynamic } from './utils';
+import _ from 'lodash';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
@@ -18,9 +20,12 @@ const router = new VueRouter({
         {path: '/', redirect:'/objects'}]
 });
 
+
 const store = new Vuex.Store({
     state: {
         mutaObjects: [],
+        mutaPropLists: {},
+        mutaProps: {},
         selectedObjectId: null
     },
     mutations: {
@@ -29,11 +34,47 @@ const store = new Vuex.Store({
         },
         set_selected_object_id (state, selectedObjectId) {
             state.selectedObjectId = selectedObjectId
+        },
+        set_muta_object (state, mutaObject) {
+            console.log("Commiting");
+            console.log(mutaObject);
+            Vue.set(state.mutaPropLists, mutaObject.obj_id, mutaObject.props);
+            // Parse all props in to the normalized all-object prop array
+            for (let prop of mutaObject.props) {
+                // console.log("Storing prop");
+                // console.log(prop);
+                Vue.set(state.mutaProps,
+                        globalPropId(mutaObject.obj_id, prop.id),
+                        prop.value);
+          }
+        },
+        muta_prop_change (state, mutaPropChange) {
+            Vue.set(state.mutaProps,
+                globalPropId( mutaPropChange.objId, mutaPropChange.propId),
+                { "value": mutaPropChange.value,
+                  "eventSource": mutaPropChange.eventSource }
+                  );
         }
     },
     getters: {
         mutaObjectCount: state => {
             return state.mutaObjects.length;
+        },
+        getMutaProp: (state) => (objId, propId) => {
+            return _.find(state.mutaPropLists[objId], {'id': propId});
+        },
+        getMutaPropValue: (state) => (objId, propId) => {
+            return state.mutaProps[globalPropId(objId, propId)].value;
+        },
+        getMutaPropChange: (state) => (objId, propId) => {
+            return state.mutaProps[globalPropId(objId, propId)];
+        },
+        getDynamicValue: (state, getters) => (objId, value) => {
+            if (isDynamic(value)) {
+                return getters.getMutaPropValue(objId, value.id);
+            } else {
+                return value;
+            }
         }
     }
 })

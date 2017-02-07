@@ -3,20 +3,17 @@
   <div class="panel-body">
       <form class="form-horizontal">
           <span class="pull-left control-label">
-              <template v-if="doc">
+              <template v-if="propObject.doc">
               <a :href="'#' + validId" data-toggle="collapse">
-              {{ name }}</a></template>
-              <template v-else>{{ name }}</template>
+              {{ propObject.name }}</a></template>
+              <template v-else>{{ propObject.name }}</template>
           </span>
-          <muta-prop-value v-bind="{ 'value': currentValue, 'type': type,
-          'value_type': value_type, 'max_val': max_val, 'min_val': min_val,
-           'step': step, 'read_only': read_only, 'id':id, 'objId': objId,
-           'select': select, 'toggle': toggle }">
+          <muta-prop-value :prop-object="propObject" :objId="objId">
           </muta-prop-value>
       </form>
       <div :id="validId" class="mutaprop-help collapse ">
           <hr>
-          <div class="help-block" v-html="doc"></div>
+          <div class="help-block" v-html="propObject.doc"></div>
           <!--<p> {{ doc }}</p>-->
       </div>
   </div>
@@ -29,17 +26,20 @@
     import MutaPropValue from './MutaPropValue.vue'
     export default {
         components: { MutaPropValue },
-        props: ['id', 'name', 'value', 'doc', 'type', 'max_val', 'value_type',
-            'min_val', 'read_only', 'step', 'objId', 'select', 'toggle'],
+        props: ['propObject', 'objId'],
         data: function() {
             return {
-                currentValue: this.value,
+                currentValue: this.propObject.value,
             }
         },
         computed: {
             validId : function() {
-                return slugify(this.id).replace(/\_/g, "-");
+                return slugify(this.propObject.id).replace(/\_/g, "-");
             },
+            doc: function () {
+              return this.$store.getters.getDynamicValue(this.objId,
+                        this.propObject.doc)
+            }
         }
     }
 </script>
