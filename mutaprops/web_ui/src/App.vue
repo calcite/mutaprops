@@ -177,7 +177,6 @@ export default {
             } else {
                 //TODO: Remove this if not necessary
                 window.eventBus.$emit(msg.type, msg.params)
-            };
             }
         },
 
@@ -234,7 +233,6 @@ export default {
           }
           this.logDisplay = !this.logDisplay;
         }
-
     },
 
     created: function() {

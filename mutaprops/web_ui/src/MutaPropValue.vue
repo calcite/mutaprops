@@ -4,7 +4,7 @@
             {{ labelVal }}
         </label>
         <template v-if="hasSelect">
-            <select  :disabled="propObject.read_only" class="form-control" v-model="uiVal"
+            <select  :disabled="read_only" class="form-control" v-model="uiVal"
             :class="inputClass" v-on:change="onUserChange"
                      v-on:click="onSelectClick">
                 <option v-for="option in selectItems"
@@ -15,17 +15,17 @@
         </template>
         <template v-else>
             <input v-if="(propObject.value_type == 'INT') || (propObject.value_type == 'REAL')"
-                   v-model.number="val" type="number"
-                   :min="propObject.min_val" :max="propObject.max_val" :step="propObject.step"
-                   :disabled="propObject.read_only" class="form-control"
+                   v-model.number="uiVal" type="number"
+                   :min="min_val" :max="max_val" :step="step"
+                   :disabled="read_only" class="form-control"
                    :class="inputClass"
                    v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
-            <input v-if="propObject.value_type == 'BOOL'" type="checkbox" data-toggle="propObject.toggle"
-                   v-model="val" :class="inputClass" v-on:change="onUserChange"
-                   :disabled="propObject.read_only" :id="validId">
-            <input v-if="propObject.value_type == 'STRING'" v-model="val" type="text"
-                   :class="inputClass" :disabled="propObject.read_only"
-                   :maxlength="propObject.max_val" class="form-control"
+            <input v-if="propObject.value_type == 'BOOL'" type="checkbox"
+                   v-model="uiVal" :class="inputClass" v-on:change="onUserChange"
+                   :disabled="read_only" :id="validId">
+            <input v-if="propObject.value_type == 'STRING'" v-model="uiVal" type="text"
+                   :class="inputClass" :disabled="read_only"
+                   :maxlength="max_val" class="form-control"
                    v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
             <button v-if="propObject.type == 'action'" v-on:click="actionExecuted"
                     type="button"
@@ -98,16 +98,14 @@
         data: function() {
             return {
                 labelVal: this.propObject.value,
-                uiVal: null,
-                valueState: 'current',
+                uiVal: this.propObject.value,
                 inUserChange: false,
                 inObjectChange: false,
-                afterSelectUpdate: false,
                 afterObjectChange: false,
                 inModelUpdate: false,
-                dynamicSelectId: null,
-                dynamicSelectClassId: null,
                 changeMode:null,
+                trackedDependencies: {},
+                ignoreToggleEvent: false
             }
         },
         computed: {
@@ -121,28 +119,42 @@
               return this.displayValue(this.val);
             },
             selectItems: function () {
-              console.log("Parsing select data for " + this.propObject.id);
+//              console.log("Parsing select data for " + this.propObject.id);
               return parseSelectData(
                   this.$store.getters.getDynamicValue(this.objId,
                     this.propObject.select));
             },
+            hasSelect: function() {
+                return !_.isEmpty(this.selectItems);
+            },
+            max_val: function () {
+              return this.$store.getters.getDynamicValue(this.objId,
+                        this.propObject.max_val)
+            },
+            min_val: function () {
+                return this.$store.getters.getDynamicValue(this.objId,
+                    this.propObject.min_val)
+            },
+            step: function () {
+                return this.$store.getters.getDynamicValue(this.objId,
+                    this.propObject.step)
+            },
+            read_only: function () {
+                return this.$store.getters.getDynamicValue(this.objId,
+                    this.propObject.read_only)
+            },
             isChangeLabelVisible: function() {
-                return (this.inUserChange || this.afterObjectChange ||
-                this.afterSelectUpdate);
+                return (this.inUserChange || this.afterObjectChange);
             },
             validId : function() {
                 return slugify(this.propObject.id);
-            },
-            hasSelect: function() {
-                // TODO: Add dynamic source
-                return !_.isEmpty(this.propObject.select);
             },
             labelClass: function() {
                 var labelType = '';
                 if (this.inUserChange) {
                     labelType = 'label-warning';
                 }
-                if (this.afterObjectChange || this.afterSelectUpdate) {
+                if (this.afterObjectChange) {
                     labelType = 'label-primary';
                 }
                 if ((this.changeMode == 'user') ||
@@ -162,14 +174,17 @@
 
                 return '';
             },
-//            mapState({
-//              val (state) {
-//                return state.mutaProps[globalPropId(this.objId, this.propObject.id)];
-//              }
-//            })
+            toggleSwitch: function() {
+              if ((this.propObject.value_type === 'BOOL') &&
+                  this.propObject.toggle) {
+                  return $("input[type='checkbox']#" + this.validId);
+              } else {
+                return null;
+              }
+            }
         },
         watch: {
-            val: function(value, oldValue) {
+            uiVal: function(value, oldValue) {
                 if (this.inObjectChange) {
                     this.inObjectChange = false;
                     this.afterObjectChange = true;
@@ -194,27 +209,64 @@
                     console.log(response)
                 });
             },
+            updateToggleSwitch: function() {
+                if (this.toggleSwitch) {
+                  if (this.uiVal != this.toggleSwitch.prop('checked')) {
+                      this.ignoreToggleEvent = true;
+                      this.toggleSwitch.bootstrapToggle(
+                          this.uiVal ? 'on' : 'off');
+                  }
+                    this.toggleSwitch.bootstrapToggle(
+                        this.read_only ? 'disable': 'enable');
+                }
+            },
+            onToggleUserChange: function() {
+                if (this.ignoreToggleEvent) {
+                    this.ignoreToggleEvent = false;
+                    return;
+                }
+                console.log("Updating object " + this.objId + " prop " +
+                    this.propObject.id + " with value " + this.uiVal);
+                this.inModelUpdate = true;
+//                this.toggleSwitch.bootstrapToggle({ onstyle: "warning", offstyle: "warning"});
+//                this.toggleSwitch.bootstrapToggle({ on: "warning", off: "wng"});
+                this.toggleSwitch.prop("onstyle", "warning");
+                this.toggleSwitch.prop("offstyle", "warning");
+//                var vm = this;
+//                this.$http.put('api/objects/' + encodeURIComponent(this.objId) +
+//                    '/props/' + encodeURIComponent(this.propObject.id) + '?value=' +
+//                    encodeURIComponent(this.uiVal)).then((response)=> {
+//                    vm.inUserChange = false;
+//                    vm.afterObjectChange = false;
+//                    vm.inModelUpdate = false;
+//                    this.toggleSwitch.prop("onstyle", "default").change();
+//                    this.toggleSwitch.prop("offstyle", "default").change();
+//                    console.log("Updated object " + this.objId + " prop " +
+//                        this.propObject.id + " with value " + this.uiVal);
+//                },(response) => {
+//                    console.error(response);
+//                });
+            },
             onUserChange: _.debounce(function() {
                 // Update the value
                 console.log("Updating object " + this.objId + " prop " +
                         this.propObject.id + " with value " + this.val);
-                this.afterSelectUpdate = false;
                 this.inModelUpdate = true;
                 var vm = this;
                 this.$http.put('api/objects/' + encodeURIComponent(this.objId) +
                         '/props/' + encodeURIComponent(this.propObject.id) + '?value=' +
-                        encodeURIComponent(this.val)).then((response)=> {
+                        encodeURIComponent(this.uiVal)).then((response)=> {
                     vm.inUserChange = false;
                     vm.afterObjectChange = false;
                     vm.inModelUpdate = false;
                     console.log("Updated object " + this.objId + " prop " +
-                            this.propObject.id + " with value " + this.val);
+                            this.propObject.id + " with value " + this.uiVal);
                 },(response) => {
-                    console.log(response);
+                    console.error(response);
                 });
             }, 1000),
             onSelectClick: function() {
-                this.afterSelectUpdate = false;
+                this.afterObjectChange = false;
             },
             getSelectText: function(selectVal) {
 //                console.log("Getting text for value " + selectVal + " from this " + this.selectItems);
@@ -223,86 +275,122 @@
                 return (temp)?temp.text:'Undefined';
             },
             displayValue: function(value) {
-//                console.log("Making display value for: " + value);
-//                console.log(this.propObject.id + " has select: " + this.hasSelect);
-                var temp = this.hasSelect?this.getSelectText(value):value;
-                console.log("Display value for " + this.propObject.id +
-                    " is " + temp);
-                return temp;
-//                return this.hasSelect?this.getSelectText(value):value;
-            }
+                if (this.toggleSwitch) {
+                  return this.propObject.toggle[value?'on':'off'];
+                } else if (this.hasSelect) {
+                  return this.getSelectText(value);
+                } else {
+                  return value
+                }
+            },
         },
         created: function() {
 
-            //Prepare notification processing
-            var vm = this;
-            window.eventBus.$on('property_change', function(params) {
-                vm.$store.commit('muta_prop_change', params);
-//                console.log("Even fired")
-//                vm.$store.getters.getMutaPropValue(vm.objId, params.propId)
-                if ((params.objId == vm.objId) && (params.propId == vm.propObject.id)) {
-                    if ((params.eventSource == 'user') && (vm.inModelUpdate)) {
-                        //Ignore this, because it's most likely just a
-                        // notification which was caused by the same user
-                        // There is however a small probability that
-                        // Two user changes from different UI instances
-                        // At the same time would go unnoticed.
-                        // The only solution for this is to ID the
-                        // UI, but that is too much for this release.
-                        return;
-                    }
-                    vm.changeMode = params.eventSource;
-                    vm.inObjectChange = true;
-                    if (vm.inUserChange) {
-                        //Don't change the value just the label
-                        vm.labelVal = vm.displayValue(params.value);
-                        vm.afterObjectChange = true;
-                    } else {
-                        vm.labelVal = vm.displayValue(vm.val);
-//                        vm.val = params.value;
+          var vm = this;
 
-                        //For the infamous bootstrap toggle
-                        if (vm.propObject.value_type === 'BOOL') {
-                            var toggle = $("input[type='checkbox']#" +
-                                vm.validId);
-                            toggle.bootstrapToggle(vm.val ? 'on' : 'off');
-                        }
-                    }
+          //Detect dynamic dependencies:
+          this.trackedDependecies = {};
+          this.trackedDependecies[this.propObject.id] = "value";
+          _.forOwn(this.propObject, (value, key) => {
+            if (isDynamic(value)) {
+              vm.trackedDependecies[value.id] = key;
+            }
+          });
+          console.log("Tracked dependencies for " + this.propObject.id + ": " + this.trackedDependecies);
+          console.log(this.trackedDependecies);
+
+          //Subscribe to muta prop change events
+          this.$store.subscribe((mutation, state) => {
+            if ((mutation.type == 'muta_prop_change') &&
+                (mutation.payload.objId == vm.objId) &&
+                (_.has(vm.trackedDependecies, mutation.payload.propId))
+                ) {
+              // Here to implement changes
+
+              console.log(vm.propObject.id + " changed " + vm.trackedDependecies[mutation.payload.propId] + " to " + mutation.payload.value);
+              if (mutation.payload.propId == vm.propObject.id) {
+
+                vm.changeMode = mutation.payload.eventSource;
+                vm.inObjectChange = true;
+
+                if (vm.inUserChange) {
+                    //Don't change the value just the label
+                    vm.labelVal = vm.displayValue(mutation.payload.value);
+                    vm.afterObjectChange = true;
+                } else {
+                    vm.labelVal = vm.displayValue(vm.uiVal);
+                    vm.uiVal = mutation.payload.value;
                 }
-            });
-//            if (this.dynamicSelectId != null) {
-//                window.eventBus.$on('select_change', function(params) {
-//                    var temp_id;
-//                    if (vm.dynamicSelectClassId != null) {
-//                       temp_id = vm.dynamicSelectClassId;
-//                    } else {
-//                        temp_id = vm.objId;
-//                    }
+              } else if (vm.trackedDependecies[mutation.payload.propId]
+                  != 'read_only') {
+                  vm.labelVal = vm.trackedDependecies[mutation.payload.propId] +
+                      'changed';
+                  vm.afterObjectChange = true;
+              }
+              vm.updateToggleSwitch();
+            }
+          });
+//          this.$store.watch( function (state) {
+//            return state.mutaProps;
+//          }, () => {
+//            // The change logic here
 //
-//                    if ((params.objId == temp_id) &&
-//                            (params.selectId == vm.dynamicSelectId)) {
-//                        vm.updateSelectItems(params.value);
-//                        vm.labelVal = "Selection Updated";
-//                        vm.afterSelectUpdate = true;
+////              console.log("MutaProp change called");
+////            console.log(vm.$store.getters.getMutaPropChange(vm.objId, vm.propObject.id));
+//          }, { "deep": true });
+
+//            //Prepare notification processing
+//            var vm = this;
+//            window.eventBus.$on('property_change', function(params) {
+//                vm.$store.commit('muta_prop_change', params);
+////                console.log("Even fired")
+////                vm.$store.getters.getMutaPropValue(vm.objId, params.propId)
+//                if ((params.objId == vm.objId) && (params.propId == vm.propObject.id)) {
+//                    if ((params.eventSource == 'user') && (vm.inModelUpdate)) {
+//                        //Ignore this, because it's most likely just a
+//                        // notification which was caused by the same user
+//                        // There is however a small probability that
+//                        // Two user changes from different UI instances
+//                        // At the same time would go unnoticed.
+//                        // The only solution for this is to ID the
+//                        // UI, but that is too much for this release.
+//                        return;
 //                    }
-//                });
-//            }
+//                    vm.changeMode = params.eventSource;
+//                    vm.inObjectChange = true;
+//                    if (vm.inUserChange) {
+//                        //Don't change the value just the label
+//                        vm.labelVal = vm.displayValue(params.value);
+//                        vm.afterObjectChange = true;
+//                    } else {
+//                        vm.labelVal = vm.displayValue(vm.val);
+////                        vm.val = params.value;
+//
+//                        //For the infamous bootstrap toggle
+//                        if (vm.propObject.value_type === 'BOOL') {
+//                            var toggle = $("input[type='checkbox']#" +
+//                                vm.validId);
+//                            toggle.bootstrapToggle(vm.val ? 'on' : 'off');
+//                        }
+//                    }
+//                }
+//            });
+
         },
         mounted: function () {
             // If we use toggle instead of checkbox, we have to manually service all stuff
             // that Vue is doing automatically by itself, because the way toggle is made,
             // it destroys all Vue bindings...
-            if (this.propObject.value_type === 'BOOL') {
+            if (this.toggleSwitch) {
                 var self = this;
                 var toggle = $("input[type='checkbox']#" + this.validId);
                 console.log("Creating toggle");
                 console.log(this.propObject.toggle);
                 toggle.bootstrapToggle( this.propObject.toggle );
                 toggle.change(function () {
-                    self.val = toggle.prop('checked');
-                    self.onUserChange();
+                    self.uiVal = toggle.prop('checked');
+                    self.onToggleUserChange();
                     //TODO: check why is it registering as remoteChange and not userChange
-                    //TODO: Add selection between checkbox and Toggle
                 })
 
             }

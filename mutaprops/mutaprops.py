@@ -210,7 +210,8 @@ class MutaProperty(MutaProp):
                                             cls.MP_STEP, cls.MP_FGET,
                                             cls.MP_FSET, cls.MP_FDEL,
                                             cls.MP_CHANGE_CALLBACK,
-                                            cls.MP_SELECT, cls.MP_TOGGLE)
+                                            cls.MP_SELECT, cls.MP_TOGGLE,
+                                            cls.MP_READ_ONLY)
 
     @classmethod
     def _exported_params(cls):
@@ -280,6 +281,7 @@ class MutaProperty(MutaProp):
         self._muta_fdel = kwargs.get(self.MP_FDEL, None)
         self._muta_change_callback = kwargs.get(self.MP_CHANGE_CALLBACK, None)
         self._muta_select = kwargs.get(self.MP_SELECT, {})
+        self._muta_read_only = kwargs.get(self.MP_READ_ONLY, False)
         # logger.debug("Initializing mutaprop %s with selector %s" % (pid, temp_select))
 
         # # TODO: rewrite to mutasource
@@ -344,7 +346,7 @@ class MutaProperty(MutaProp):
                 maxval=self._muta_max_val,
                 step=self._muta_step,
                 select=self._muta_select,
-                ro='[Read Only]' if self.is_read_only() else ''))
+                ro='[Read Only]' if not self.is_writeable() else ''))
         return temp
 
     def getter(self, fget):
@@ -416,9 +418,15 @@ class MutaProperty(MutaProp):
         self._muta_change_callback = callback
 
     def to_dict(self, obj=None):
-        setattr(self, '_muta_{0}'.format(self.MP_READ_ONLY),
-                self.is_read_only())
+
         temp = super().to_dict()
+
+        # Some specific/derived properties follows
+
+        # Override the user setting for read_only if setter is not provided
+        if not self.is_writeable():
+            temp[self.MP_READ_ONLY] = False
+
         if obj:
             temp[self.MP_VALUE] = self.__get__(obj)
         temp[self.MP_VALUE_TYPE] = self._muta_value_type.name
@@ -439,8 +447,12 @@ class MutaProperty(MutaProp):
             logger.debug("Set remotely to %s", str(value))
             self._muta_fset(obj, value)
 
-    def is_read_only(self):
-        return self._muta_fset is None
+    def is_writeable(self):
+        """ Returns true if only getter is defined.
+
+            Warning: doesn't reflect the read_only kwarg!
+        """
+        return self._muta_fset is not None
 
 
 class MutaSource(MutaProperty):

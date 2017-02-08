@@ -45,10 +45,11 @@ const store = new Vuex.Store({
                 // console.log(prop);
                 Vue.set(state.mutaProps,
                         globalPropId(mutaObject.obj_id, prop.id),
-                        prop.value);
+                        { "value": prop.value, "eventSource": null});
           }
         },
         muta_prop_change (state, mutaPropChange) {
+            // console.log("Storing prop change");
             Vue.set(state.mutaProps,
                 globalPropId( mutaPropChange.objId, mutaPropChange.propId),
                 { "value": mutaPropChange.value,

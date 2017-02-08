@@ -178,7 +178,7 @@ class HttpMutaManager(object):
             else:
                 temp_prop = self._find_prop(temp_obj, request)
 
-                if temp_prop.is_read_only():
+                if not temp_prop.is_writeable():
                     return web.HTTPMethodNotAllowed('value', [],
                                                 text="Property is read only.")
 
