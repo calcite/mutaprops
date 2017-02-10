@@ -23,14 +23,14 @@ const router = new VueRouter({
 
 const store = new Vuex.Store({
     state: {
-        mutaObjects: [],
-        mutaPropLists: {},
+        mutaObjectList: [],
+        mutaObjects: {},
         mutaProps: {},
         selectedObjectId: null
     },
     mutations: {
         set_muta_objects (state, objects) {
-            state.mutaObjects = objects;
+            state.mutaObjectList = objects;
         },
         set_selected_object_id (state, selectedObjectId) {
             state.selectedObjectId = selectedObjectId
@@ -38,14 +38,18 @@ const store = new Vuex.Store({
         set_muta_object (state, mutaObject) {
             console.log("Commiting");
             console.log(mutaObject);
-            Vue.set(state.mutaPropLists, mutaObject.obj_id, mutaObject.props);
+            Vue.set(state.mutaObjects, mutaObject.obj_id, mutaObject);
             // Parse all props in to the normalized all-object prop array
             for (let prop of mutaObject.props) {
-                // console.log("Storing prop");
-                // console.log(prop);
-                Vue.set(state.mutaProps,
-                        globalPropId(mutaObject.obj_id, prop.id),
+                // let propId = globalPropId(mutaObject.obj_id, prop.id);
+                let propId = globalPropId(_.get(prop, 'class_scope', false)?
+                    mutaObject.class_id:mutaObject.obj_id, prop.id);
+
+                Vue.set(state.mutaProps, propId,
                         { "value": prop.value, "eventSource": null});
+                console.log("PropID: " + propId);
+                // Vue.set(state.mutaProps, globalPropId(mutaObject.obj_id, prop.id),
+                //     { "value": prop.value, "eventSource": null});
           }
         },
         muta_prop_change (state, mutaPropChange) {
@@ -59,13 +63,20 @@ const store = new Vuex.Store({
     },
     getters: {
         mutaObjectCount: state => {
-            return state.mutaObjects.length;
+            return state.mutaObjectList.length;
         },
         getMutaProp: (state) => (objId, propId) => {
-            return _.find(state.mutaPropLists[objId], {'id': propId});
+            return _.find(state.mutaObjects[objId].props, {'id': propId});
         },
-        getMutaPropValue: (state) => (objId, propId) => {
-            return state.mutaProps[globalPropId(objId, propId)].value;
+        getMutaPropValue: (state, getters) => (objId, propId) => {
+            let scope_objId = null;
+            if (_.get(getters.getMutaProp(objId, propId),
+                    'class_scope', false)) {
+                scope_objId = state.mutaObjects[objId].class_id;
+            } else {
+                scope_objId = objId;
+            }
+            return state.mutaProps[globalPropId(scope_objId, propId)].value;
         },
         getMutaPropChange: (state) => (objId, propId) => {
             return state.mutaProps[globalPropId(objId, propId)];

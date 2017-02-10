@@ -5,7 +5,7 @@ from enum import Enum
 import logging
 import types
 from collections import OrderedDict
-from .utils import MutaPropError, SelectSource, MutaSelect, rest_to_html
+from .utils import MutaPropError, rest_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -381,9 +381,9 @@ class MutaProperty(MutaProp):
         :param step: Step increment for numeric types
         :param select: Selector object to provide user select. A selector can be
                         either a dict, or list of (label, value) tuples, or
-                        a MutaSelect which provides dict or list of tuples.
-                        If selector is a MutaSelect, the selector list will be
-                        updated during runtime.
+                        another MutaProperty or MutaSource which provides
+                        dict or list of tuples. In such case, the selector list
+                        will be updated during runtime.
 
         :returns: MutaProp object
         """
@@ -430,10 +430,6 @@ class MutaProperty(MutaProp):
         if obj:
             temp[self.MP_VALUE] = self.__get__(obj)
         temp[self.MP_VALUE_TYPE] = self._muta_value_type.name
-
-        # update the select (this would deserve some major rewrite btw)
-        # because now the select serialization is duplicated
-        #temp[self.MP_SELECT] = self._muta_select.to_dict(obj)
 
         # Remove toggle parameter for non-bool items
         if self._muta_value_type != MutaTypes.BOOL:
@@ -485,13 +481,12 @@ class MutaSource(MutaProperty):
 
     @classmethod
     def _exported_params(cls):
-        return cls.MP_ID, cls.MP_DOC, cls.MP_TYPE
+        return cls.MP_ID, cls.MP_DOC, cls.MP_TYPE, cls.MP_CLASS_SCOPE
 
     @classmethod
     def serialize(cls, value):
         if isinstance(value, MutaProperty):
-            return {cls.MP_TYPE: value.MP_CLASS_TYPE,
-                    cls.MP_ID: value._muta_id}
+            return {cls.MP_TYPE: value.MP_CLASS_TYPE, cls.MP_ID: value._muta_id}
         else:
             return value
 
@@ -596,7 +591,8 @@ class MutaSource(MutaProperty):
             # Notify of property change
             if different and self._muta_change_callback:
                 logger.debug("Notification of set on mutaselect on %s", id(cls))
-                self._muta_change_callback(id(cls), self._muta_id,
+                self._muta_change_callback(cls._orig_cls.__name__,
+                                           self._muta_id,
                                            value)
 
         return classmethod(class_scoped_setter)
@@ -651,6 +647,7 @@ class MutaAction(MutaProp):
 class MutaPropClass(object):
 
     MP_OBJ_ID = 'obj_id'
+    MP_CLASS_ID = 'class_id'
     MP_PROPS = 'props'
     MP_NAME = 'name'
     MP_GUI_ID = 'gui_id'
@@ -662,9 +659,9 @@ class MutaPropClass(object):
     def _exported_params(cls):
         return (cls.MP_OBJ_ID, cls.MP_NAME, cls.MP_PROPS,
                 cls.MP_GUI_MAJOR_VERSION, cls.MP_GUI_MINOR_VERSION,
-                cls.MP_DOC)
+                cls.MP_DOC, cls.MP_CLASS_ID)
 
-    def update_props(self, change_callback=None, select_update_callback=None):
+    def update_props(self, change_callback=None):
         """Because this is potentially heavy operation and property definitions
         are not likely to be changed during objects lifetime, it's easier to
         cache it.
@@ -681,11 +678,6 @@ class MutaPropClass(object):
                 if isinstance(value, MutaSource):
                     if value.class_scoped:
                         value.set_owner_class(self.__class__)
-
-                # if isinstance(value, MutaSelect):
-                #     value.register_update_callback(select_update_callback)
-                #     if value.class_scoped:
-                #         value.set_owner_class(self.__class__)
 
         temp.sort(key=lambda x: x.definition_order)
         setattr(self, self.muta_attr(self.MP_PROPS),
@@ -717,13 +709,12 @@ class MutaPropClass(object):
     def muta_attr(cls, attr):
         return '_muta_{0}'.format(attr)
 
-    def muta_init(self, object_id, change_callback=None,
-                  select_update_callback=None):
-        self.update_props(change_callback, select_update_callback)
+    def muta_init(self, object_id, change_callback=None):
+        self.update_props(change_callback)
         setattr(self, self.muta_attr(self.MP_OBJ_ID), object_id)
 
     def muta_unregister(self):
-        self.update_props(change_callback=None, select_update_callback=None)
+        self.update_props(change_callback=None)
 
     def is_muta_ready(self):
         if (hasattr(self, self.muta_attr(self.MP_OBJ_ID)) and
@@ -737,6 +728,8 @@ class MutaPropClass(object):
         for attr in self._exported_params():
             if attr == self.MP_DOC:
                 temp[self.MP_DOC] = rest_to_html(self.__doc__)
+            elif attr == self.MP_CLASS_ID:
+                temp[self.MP_CLASS_ID] = self._orig_cls.__name__
             else:
                 attr_value = getattr(self, self.muta_attr(attr))
                 if attr == self.MP_PROPS:

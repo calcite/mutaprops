@@ -3,7 +3,6 @@
 
 import logging
 from .mutaprops import MutaProperty, MutaAction, MutaPropClass, MutaSource
-from .utils import MutaSelect
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +47,6 @@ def mutasource(func=None, class_scope=False):
             return MutaSource(fget.__name__, None, None,
                               class_scope=class_scope, fget=fget)
         return decorator
-
-
-def mutaselect(func):
-    return MutaSelect(func.__name__, getter=func)
-
-
-def mutaselect_classproperty(func):
-    return MutaSelect(func.__name__, getter=func, class_scope=True)
 
 
 def mutaprop_action(display_name, **kwargs):

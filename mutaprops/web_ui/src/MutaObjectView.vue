@@ -1,7 +1,7 @@
 <template>
     <div id="wrapper">
         <muta-object-list v-if="$store.getters.mutaObjectCount > 1"
-                          v-bind:object-list="$store.state.mutaObjects"
+                          v-bind:object-list="$store.state.mutaObjectList"
                           v-bind:selected-object="viewedObjectId">
         </muta-object-list>
         <!--TODO: Solve for no object selected and only one object in the list -->
@@ -72,25 +72,10 @@ export default {
           }
       },
       objectConnectionExists: function () {
-        return _.includes(this.$store.state.mutaObjects, this.viewedObjectId);
+        return _.includes(this.$store.state.mutaObjectList, this.viewedObjectId);
       }
     },
     methods: {
-
-//        fetchProps: function(objId) {
-//            var vm = this;
-//            var propResource = this.$resource('api/objects/{id}/props');
-//            this.mutaListLoaded = false;
-//            this.mutaObjectAvailable = true;
-//            propResource.get({id:objId}).then((response)=> {
-//                vm.mutaProps = response.body;
-//                vm.mutaListLoaded = true;
-//                vm.objectConnectionExists = true;
-//            },(response) => {
-//                vm.mutaListLoaded = true;
-//                vm.mutaObjectAvailable = false;
-//            });
-//        },
 
         fetchObject: function(objId) {
             var vm = this;
@@ -114,7 +99,7 @@ export default {
                 console.log("Now we shall redirect");
                 this.$router.push({ name: 'object',
                                     params: {
-                                        id: this.$store.state.mutaObjects[0]
+                                        id: this.$store.state.mutaObjectList[0]
                                             }
                                   });
             }
@@ -125,13 +110,13 @@ export default {
 //        this.fetchObjects();
         var vm = this;
         this.$store.watch(function (state) {
-          return state.mutaObjects;
+          return state.mutaObjectList;
         }, () => {
             if ((vm.$store.state.selectedObjectId == null) &&
                 (vm.$store.getters.mutaObjectCount == 1)) {
                 vm.$router.push({
                     name: 'object',
-                    params: {id: vm.$store.state.mutaObjects[0]}
+                    params: {id: vm.$store.state.mutaObjectList[0]}
                 });
             }
         });

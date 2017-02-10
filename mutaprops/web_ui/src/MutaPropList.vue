@@ -89,20 +89,6 @@ export default {
             return temp;
         }
     },
-//    created: function () {
-//      this.objectStore = new Vuex.Store({
-//        state: {
-//          props: [],
-//          propVals: {},
-//        },
-//          mutations: {
-//            set_props (state, props) {
-//              state.props = props;
-//              //Update prop Vals
-//            }
-//          }
-//      });
-//    }
 }
 </script>
 

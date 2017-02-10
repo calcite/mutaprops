@@ -6,8 +6,7 @@ __email__ = 'jnevrly@alps.cz'
 __version__ = '0.4.1'
 
 from .decorators import mutaprop_class, mutaproperty, mutaprop_action, \
-    mutaselect, mutaselect_classproperty, mutasource
+    mutasource
 from .mutaprops import MutaTypes
 from .managers import HttpMutaManager
-from .utils import MutaSelect
 
