@@ -2,6 +2,16 @@
 History
 =======
 
+0.5.0 (2017-02-15)
+------------------
+* Large internal rework - introduced update-dependencies for values and
+selected meta-values (selects, minimums, maximums, steps etc).
+* Added MutaSources as non-UI MutaProps for supporting internal dependencies
+* Added HTML type of value (read-only)
+* JS client now works with single state-store (Vuex)
+* MutaSelects removed - this functionality is now replaced by more general
+update-dependencies through MutaSources. This breaks compatibility with 0.4.x
+
 0.4.1 (2016-12-06)
 ------------------
 * Fixed bug with displaying first prop in hierarchy panel.
