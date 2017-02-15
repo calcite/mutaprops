@@ -17,6 +17,7 @@ class MutaTypes(Enum):
     INT = 1
     REAL = 2
     BOOL = 3
+    HTML = 4
 
     @classmethod
     def typecast(cls, muta_type, string_value):
@@ -32,6 +33,8 @@ class MutaTypes(Enum):
             return float(string_value)
         elif muta_type == cls.BOOL:
             return bool(string_value.lower() == 'true')
+        elif muta_type == cls.HTML:
+            return string_value
         else:
             raise MutaPropError("Unknown value type {0}".format(muta_type))
 

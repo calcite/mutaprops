@@ -1,22 +1,28 @@
 <template>
 <div :id="'mp-' + validId" class="panel panel-default panel-prop">
-  <div class="panel-body">
-      <form class="form-horizontal">
+  <template v-if="propObject.value_type == 'HTML' ">
+      <div class="panel-heading">{{ propObject.name }}</div>
+      <div class="panel-body" v-html="htmlValue"></div>
+  </template>
+  <template v-else>
+      <div class="panel-body">
+          <form class="form-horizontal">
           <span class="pull-left control-label">
               <template v-if="propObject.doc">
               <a :href="'#' + validId" data-toggle="collapse">
               {{ propObject.name }}</a></template>
               <template v-else>{{ propObject.name }}</template>
           </span>
-          <muta-prop-value :prop-object="propObject" :objId="objId">
-          </muta-prop-value>
-      </form>
-      <div :id="validId" class="mutaprop-help collapse ">
-          <hr>
-          <div class="help-block" v-html="propObject.doc"></div>
-          <!--<p> {{ doc }}</p>-->
+              <muta-prop-value :prop-object="propObject" :objId="objId">
+              </muta-prop-value>
+          </form>
+          <div :id="validId" class="mutaprop-help collapse ">
+              <hr>
+              <div class="help-block" v-html="propObject.doc"></div>
+              <!--<p> {{ doc }}</p>-->
+          </div>
       </div>
-  </div>
+  </template>
 </div>
 </template>
 
@@ -38,7 +44,11 @@
             },
             doc: function () {
               return this.$store.getters.getDynamicValue(this.objId,
-                        this.propObject.doc)
+                        this.propObject.doc);
+            },
+            htmlValue: function() {
+              return this.$store.getters.getMutaPropValue(this.objId,
+                                                          this.propObject.id);
             }
         }
     }
