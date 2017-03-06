@@ -78,6 +78,8 @@ export default {
     methods: {
 
         fetchObject: function(objId) {
+            if (!objId)  return;
+
             var vm = this;
             var objResource = this.$resource('api/objects/{id}');
             this.mutaListLoaded = false;
