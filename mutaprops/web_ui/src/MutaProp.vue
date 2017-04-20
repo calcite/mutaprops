@@ -9,14 +9,14 @@
           <form class="form-horizontal">
           <span class="pull-left control-label">
               <template v-if="propObject.doc">
-              <a :href="'#' + validId" data-toggle="collapse">
+              <a :href="'#' + validId + '-help'" data-toggle="collapse">
               {{ propObject.name }}</a></template>
               <template v-else>{{ propObject.name }}</template>
           </span>
               <muta-prop-value :prop-object="propObject" :objId="objId">
               </muta-prop-value>
           </form>
-          <div :id="validId" class="mutaprop-help collapse ">
+          <div :id="validId + '-help'" class="mutaprop-help collapse ">
               <hr>
               <div class="help-block" v-html="propObject.doc"></div>
               <!--<p> {{ doc }}</p>-->

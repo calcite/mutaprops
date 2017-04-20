@@ -2,6 +2,14 @@
 History
 =======
 
+0.5.2 (2017-04-20)
+------------------
+Fixed bug with Bool-type props help panels not uncollapsing.
+
+0.5.1 (2017-03-06)
+------------------
+Fixed error message when object was not selected in an one-object list.
+
 0.5.0 (2017-02-15)
 ------------------
 * Large internal rework - introduced update-dependencies for values and
