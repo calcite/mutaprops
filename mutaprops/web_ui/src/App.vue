@@ -97,6 +97,7 @@
 import Vue from 'vue';
 import SockJS from 'sockjs-client';
 import _ from 'lodash';
+import { vsprintf } from 'sprintf-js';
 import { globalPropId } from './utils';
 
 export default {
@@ -224,7 +225,9 @@ export default {
                 ":" + timestamp.getMinutes() + "." +
                 timestamp.getMilliseconds();
 
-            return time + " [" + item.levelname + "] " + item.msg;
+            var formatted_msg = vsprintf(item.msg, item.args);
+
+            return time + " [" + item.levelname + "] " + formatted_msg;
         },
 
         toggleLogDisplay: function() {

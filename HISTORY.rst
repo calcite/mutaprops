@@ -2,6 +2,10 @@
 History
 =======
 
+0.5.3 (2017-04-21)
+------------------
+Fixed bug with log messages formatting on the Web UI.
+
 0.5.2 (2017-04-20)
 ------------------
 Fixed bug with Bool-type props help panels not uncollapsing.
