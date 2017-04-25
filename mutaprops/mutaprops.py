@@ -736,7 +736,6 @@ class MutaPropClass(object):
             else:
                 attr_value = getattr(self, self.muta_attr(attr))
                 if attr == self.MP_PROPS:
-                    print(attr_value)
                     attr_value = [prop.to_dict(obj=self) for prop in
                                   attr_value.values()]
 

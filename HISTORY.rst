@@ -2,6 +2,10 @@
 History
 =======
 
+0.5.4 (2017-04-25)
+------------------
+Fixed debug print of properties.
+
 0.5.3 (2017-04-21)
 ------------------
 Fixed bug with log messages formatting on the Web UI.
