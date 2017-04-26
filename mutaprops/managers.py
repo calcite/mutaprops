@@ -414,7 +414,7 @@ class HttpMutaManager(object):
         handler = self._app.make_handler()
         self._app.on_shutdown.append(self._on_shutdown)
         # Task for proxy reconnector
-        self._proxy_reconnector_task = asyncio.ensure_future(
+        self._proxy_reconnector_task = asyncio.async(
             self._remote_manager_reconnector(), loop=self._app.loop)
 
         # Now run it all
@@ -422,7 +422,7 @@ class HttpMutaManager(object):
         self._host_port = port
 
         if self._master_manager:
-            asyncio.ensure_future(self.register_on_master(self._master_manager),
+            asyncio.async(self.register_on_master(self._master_manager),
                                   loop=self._app.loop)
         print("Server starting at http://{0}:{1}".format(host, port))
         self._app.loop.run_until_complete(asyncio.gather(
@@ -522,7 +522,7 @@ class HttpManagerProxy:
                                    self._address)
 
         # Start the WS manager
-        self._ws_man = asyncio.ensure_future(self.ws_manager(),
+        self._ws_man = asyncio.async(self.ws_manager(),
                                              loop=self._session.loop)
 
         # Get and process the remote objects

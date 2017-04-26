@@ -2,6 +2,10 @@
 History
 =======
 
+0.5.5 (2017-04-26)
+------------------
+Fixed incompatibility with Python 3.4.2.
+
 0.5.4 (2017-04-25)
 ------------------
 Fixed debug print of properties.
