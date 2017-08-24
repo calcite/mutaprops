@@ -1,5 +1,5 @@
 <template>
-    <div id="sidebar-wrapper" class="col-md-2">
+    <div id="sidebar-wrapper" class="col-xs-12 col-md-2">
         <div id="sidebar">
             <ul class="nav list-group">
                 <li v-for="mutaObj in objectList">

@@ -185,6 +185,7 @@ export default {
             var vm = this;
             this.$http.get('api/appname').then((response)=> {
                 vm.appName = response.body;
+                document.title = vm.appName;
             },(response) => {
                 console.log(response)
             });
@@ -257,7 +258,7 @@ export default {
 body {
     font-family: Helvetica, sans-serif;
     padding-top: 50px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .navbar-default {
@@ -278,6 +279,10 @@ body {
 .navbar-default .navbar-nav> li > a:hover, .navbar-default .navbar-nav > li > a:focus {
     /*background-color: #FFFF00;*/
     color: #FFC0CB;
+}
+
+.navbar-toggle {
+    margin-top: 15px;
 }
 
 .navbar {
@@ -401,5 +406,19 @@ body {
         max-height: 300px;
   		border-right:0;
 	}
+}
+@media(width <= 750px) {
+
+    .log-drawer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        margin-bottom: calc( -(var(--drawerHeight) + 34) );
+        transition: margin-bottom 0.3s ease-in-out;
+    }
+
+    .log-drawer-open {
+        margin-bottom: 0px;
+    }
 }
 </style>

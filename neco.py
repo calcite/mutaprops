@@ -101,7 +101,7 @@ class Neco(object):
     def body_type(self, value):
         self._body_type = value
 
-    @mutaselect
+    @mutasource
     def engine_types(self):
         return self._engine_types
 
@@ -118,11 +118,11 @@ class Neco(object):
     def engine_type(self, value):
         self._engine_type = value
 
-    @mutaselect_classproperty
+    @mutasource
     def roof_types(cls):
         return cls._roof_types
 
-    @roof_types.setter_classproperty
+    @roof_types.setter
     def set_roof_types(cls, values):
         cls._roof_types = values
 
@@ -253,7 +253,7 @@ def main():
     # asyncio.ensure_future(trunk_updater(test))
     # asyncio.ensure_future(device_updater(man))
     # asyncio.ensure_future(select_updater(test))
-    # asyncio.ensure_future(log_updater())
+    asyncio.ensure_future(log_updater())
     asyncio.ensure_future(turbo_updater(test))
     man.run(port=9000)
     # man.run_in_thread(port=9000)

@@ -1,5 +1,6 @@
 <template>
-    <div id="wrapper">
+    <div id="wrapper" class="container-fluid">
+        <div class="row">
         <muta-object-list v-if="$store.getters.mutaObjectCount > 1"
                           v-bind:object-list="$store.state.mutaObjectList"
                           v-bind:selected-object="viewedObjectId">
@@ -7,8 +8,10 @@
         <!--TODO: Solve for no object selected and only one object in the list -->
         <div id="main-wrapper"
              :class="[($store.getters.mutaObjectCount > 1)?'col-md-10':'col-md-12',
-             'pull-right']">
+             'col-xs-12']">
             <div id="main" v-if="viewedObjectId">
+                <div class="fill" v-if="$store.getters.mutaObjectCount == 1">
+                </div>
                 <div class="page-header">
                     <h3>{{ viewedObjectId }}</h3>
                 </div>
@@ -39,6 +42,7 @@
                     Select an object to control.
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </template>
@@ -144,10 +148,13 @@ export default {
 
 <style>
 #main {
-    padding-top: 40px;
+    /*padding-top: 40px;*/
 }
 .page-header {
     margin-top: -20px;
+}
+.row {
+    height: 100%;
 }
 #wrapper {
     min-height: 100%;
@@ -161,13 +168,11 @@ export default {
 #main-wrapper {
     height: 100%;
     overflow-y: auto;
-    padding: 50px 0 0px 0;
+    padding: 0;
 }
 #sidebar-wrapper {
-    height: 100%;
     padding: 50px 0 0px 0;
-    position: fixed;
-    border-right: 1px solid gray;
+    /*position: fixed;*/
 }
 #sidebar {
     position: relative;
@@ -180,4 +185,21 @@ export default {
     border-right: 0;
     border-top: 0;
 }
+@media (width >= 992px) {
+    #sidebar-wrapper {
+        height: 100%;
+        border-right: 1px solid gray;
+    }
+    #main {
+        padding-top: 80px;
+    }
+}
+@media (width <= 991px) {
+    .fill {
+        height: 70px;
+    }
+}
 </style>
+
+
+
