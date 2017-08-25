@@ -2,6 +2,11 @@
 History
 =======
 
+0.5.6 (2017-08-25)
+------------------
+Fixed various UI bugs (read-only settings, responsive design, title).
+Actions now can have read-only setting.
+
 0.5.5 (2017-04-26)
 ------------------
 Fixed incompatibility with Python 3.4.2.
