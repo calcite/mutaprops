@@ -2,6 +2,10 @@
 History
 =======
 
+0.5.7 (2017-08-25)
+------------------
+Added the forgoten JS build...
+
 0.5.6 (2017-08-25)
 ------------------
 Fixed various UI bugs (read-only settings, responsive design, title).
