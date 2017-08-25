@@ -54,11 +54,3 @@
     }
 </script>
 
-<style>
-    .panel-prop {
-        margin: 1em;
-    }
-    .mutaprop-help {
-        margin-top: 3em;
-    }
-</style>

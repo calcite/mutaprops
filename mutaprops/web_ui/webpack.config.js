@@ -46,6 +46,9 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://localhost:9000',
+      },
+      '/local': {
+          target: 'http://localhost:9000',
       }
     }
   },

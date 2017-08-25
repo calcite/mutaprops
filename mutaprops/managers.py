@@ -56,7 +56,7 @@ class HttpMutaManager(object):
                                **record.__dict__)
 
     def __init__(self, name, loop=None, master=None, local_dir=None,
-                 help_doc = None, proxy_log=None, log_level=logging.NOTSET):
+                 help_doc=None, proxy_log=None, log_level=logging.NOTSET):
         """
         :param loop: Asyncio execution loop,
         :param master: Address of the master controller (http://masteraddr:port)
@@ -177,8 +177,8 @@ class HttpMutaManager(object):
                 temp_prop = self._find_prop(temp_obj, request)
 
                 if not temp_prop.is_writeable():
-                    return web.HTTPMethodNotAllowed('value', [],
-                                                text="Property is read only.")
+                    return web.HTTPMethodNotAllowed(
+                        'value', [], text="Property is read only.")
 
                 # The setting of property itself
                 value = MutaTypes.typecast(temp_prop.value_type, value)
@@ -215,8 +215,9 @@ class HttpMutaManager(object):
                     temp_prop.muta_call(temp_obj)
                     return web.HTTPOk()
                 else:
-                    return web.HTTPMethodNotAllowed("action", ['value', ],
-                                            text="Resource is not MutaAction.")
+                    return web.HTTPMethodNotAllowed(
+                        "action", ['value', ],
+                        text="Resource is not MutaAction.")
         except (KeyError, AssertionError):
             return web.HTTPNotFound()
 
@@ -522,8 +523,7 @@ class HttpManagerProxy:
                                    self._address)
 
         # Start the WS manager
-        self._ws_man = asyncio.async(self.ws_manager(),
-                                             loop=self._session.loop)
+        self._ws_man = asyncio.async(self.ws_manager(), loop=self._session.loop)
 
         # Get and process the remote objects
         resp = yield from self._session.get(self._address + '/api/objects')

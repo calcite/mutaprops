@@ -8,9 +8,7 @@
             <i class="icon-reorder"></i>
         </button>
         <a class="navbar-brand" href="#">
-            <span class="app-logo">
-            <img src="./assets/ALPS_logo.png" class="app-logo">
-            </span>
+            <span class="app-logo">&nbsp;</span>
             <span class="app-name">{{ appName }}</span>
             <span class="badge">{{ appStatus }}</span>
         </a>
@@ -250,60 +248,9 @@ export default {
 
 <style>
 :root {
-    --borderWidth: 1px;
-    --cornerRad: 6px;
-    --LogGray: #777;
     --drawerHeight: 307px;
 }
-body {
-    font-family: Helvetica, sans-serif;
-    padding-top: 50px;
-    overflow: auto;
-}
 
-.navbar-default {
-    background-color: #003394;
-}
-.navbar-default .navbar-brand {
-    color: #ffffff;
-}
-
-.navbar-default .navbar-nav>li>a {
-    color: #ffffff;
-}
-
-.navbar-header a.navbar-brand:hover,.navbar-header a.navbar-brand:focus {
-    /*background-color: #FFFF00;*/
-    color: #FFC0CB;
-}
-.navbar-default .navbar-nav> li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-    /*background-color: #FFFF00;*/
-    color: #FFC0CB;
-}
-
-.navbar-toggle {
-    margin-top: 15px;
-}
-
-.navbar {
-    border: 0px;
-    -webkit-box-shadow: 0 8px 6px -6px #999;
-    -moz-box-shadow: 0 8px 6px -6px #999;
-    box-shadow: 0 8px 6px -6px #999;
-
-    /* the rest of your styling */
-}
-
-.app-name {
-    padding-top: 3px;
-    display: inline-block;
-}
-
-.app-logo {
-    display: inline-block;
-    margin-right: 8px;
-    float: left;
-}
 #main {
     position: relative;
     height: 100%;
@@ -321,67 +268,6 @@ body {
 
 .log-drawer-open {
     margin-bottom: 0px;
-}
-
-.log-pane {
-    background-color: #ffffff;
-    border-radius: var(--cornerRad) var(--cornerRad) 0 0;
-    border-color: var(--LogGray);
-    border-width: 1px;
-    border-style: solid solid none solid;
-    margin-left: 5px;
-    margin-right: 5px;
-    padding: 5px;
-}
-
-.log-area {
-    overflow-y: scroll;
-    margin: 4px 4px 0 4px;
-    padding: 4px;
-    border: solid 1px lightgray;
-    font-family: monospace;
-    height: 250px;
-}
-
-.log-lapel {
-    /*width: 80px;*/
-    display: inline-block;
-    background-color: #8c8c8c;
-    padding: 8px 25px 8px 15px;
-    border-radius: var(--cornerRad) var(--cornerRad) 0 0;
-    margin-left: 30px;
-    color: #ffffff;
-    cursor: pointer;
-}
-
-.log-controls {
-    padding: 4px;
-}
-
-.log-list {
-    list-style: none;
-    padding-left: 0px;
-}
-
-.loglevel-info {
-    color: #337ab7;
-}
-
-.loglevel-warning {
-    color: #eea236;
-}
-
-.loglevel-error {
-    color: red;
-}
-
-.loglevel-debug {
-    color: grey;
-}
-
-.badge-log {
-    background-color: #337ab7;
-    margin-left: 8px;
 }
 
 @media (max-width: 992px) {

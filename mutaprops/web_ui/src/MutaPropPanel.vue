@@ -28,16 +28,3 @@ export default {
 }
 </script>
 
-<style>
-    .panel-proplist {
-        border-color: #949494;
-    }
-    .panel-proplist>.panel-heading {
-        background-color: #949494;
-        color: #ffffff;
-    }
-
-    .panel-heading>a {
-        color: #ffffff;
-    }
-</style>

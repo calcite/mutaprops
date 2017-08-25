@@ -10,7 +10,8 @@
              :class="[($store.getters.mutaObjectCount > 1)?'col-md-10':'col-md-12',
              'col-xs-12']">
             <div id="main" v-if="viewedObjectId">
-                <div class="fill" v-if="$store.getters.mutaObjectCount == 1">
+                <div class="muta-fill"
+                     v-if="$store.getters.mutaObjectCount == 1">
                 </div>
                 <div class="page-header">
                     <h3>{{ viewedObjectId }}</h3>
@@ -147,29 +148,6 @@ export default {
 </script>
 
 <style>
-#main {
-    /*padding-top: 40px;*/
-}
-.page-header {
-    margin-top: -20px;
-}
-.row {
-    height: 100%;
-}
-#wrapper {
-    min-height: 100%;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0px;
-    left: 0;
-    display: inline-block;
-}
-#main-wrapper {
-    height: 100%;
-    overflow-y: auto;
-    padding: 0;
-}
 #sidebar-wrapper {
     padding: 50px 0 0px 0;
     /*position: fixed;*/
@@ -178,12 +156,6 @@ export default {
     position: relative;
     height: 100%;
     overflow-y: auto;
-}
-#sidebar .list-group-item {
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-    border-top: 0;
 }
 @media (width >= 992px) {
     #sidebar-wrapper {
@@ -195,7 +167,7 @@ export default {
     }
 }
 @media (width <= 991px) {
-    .fill {
+    .muta-fill {
         height: 70px;
     }
 }

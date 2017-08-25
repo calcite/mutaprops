@@ -52,8 +52,11 @@ process.
 Credits
 -------
 
+Logo created with the Chlorinar_ font.
+
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
+.. _Chloarinar: http://www.dafont.com/chlorinar.font
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 

@@ -255,8 +255,8 @@ def main():
     # asyncio.ensure_future(trunk_updater(test))
     # asyncio.ensure_future(device_updater(man))
     # asyncio.ensure_future(select_updater(test))
-    asyncio.ensure_future(log_updater())
-    asyncio.ensure_future(turbo_updater(test))
+    # asyncio.ensure_future(log_updater())
+    # asyncio.ensure_future(turbo_updater(test))
     man.run(port=9000)
     # man.run_in_thread(port=9000)
 

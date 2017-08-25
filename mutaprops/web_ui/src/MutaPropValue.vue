@@ -336,16 +336,3 @@
     }
 
 </script>
-
-<style>
-    .unset-value {
-        background-color: rgba(240,173,78, 0.3);
-    }
-    .updating-value {
-        background-color: rgba(237, 77, 43, 0.3);
-    }
-
-    .label-valchange {
-        margin-right: 8px;
-    }
-</style>

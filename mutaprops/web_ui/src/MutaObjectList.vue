@@ -25,8 +25,3 @@ export default {
 }
 </script>
 
-<style>
-#sidebar .sidebar-selected {
-    border-right: 20px solid #003394;
-}
-</style>
