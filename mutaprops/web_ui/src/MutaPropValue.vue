@@ -31,7 +31,7 @@
                    v-on:change="onUserChange" v-on:keyup.enter="onUserChange">
             <button v-if="propObject.type == 'action'"
                     v-on:click="actionExecuted" type="button"
-                    class="btn btn-primary">
+                    :disabled="read_only" class="btn btn-primary">
                 Action
             </button>
         </template>

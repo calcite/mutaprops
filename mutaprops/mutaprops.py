@@ -613,6 +613,15 @@ class MutaSource(MutaProperty):
 class MutaAction(MutaProp):
 
     MP_CLASS_TYPE = 'action'
+    MP_READ_ONLY = 'read_only'  # GUI Read only setting
+
+    @classmethod
+    def _allowed_kwargs(cls):
+        return super()._allowed_kwargs() + (cls.MP_READ_ONLY,)
+
+    @classmethod
+    def _exported_params(cls):
+        return super()._exported_params() + (cls.MP_READ_ONLY,)
 
     def __init__(self, pid, display_name, callback, **kwargs):
 
@@ -622,6 +631,8 @@ class MutaAction(MutaProp):
             kwargs[self.MP_DOC] = callback.__doc__
 
         super().__init__(pid, display_name, **kwargs)
+
+        self._muta_read_only = kwargs.get(self.MP_READ_ONLY, False)
 
         self._callback = callback
 
