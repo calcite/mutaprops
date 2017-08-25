@@ -69,3 +69,6 @@ target/
 /neco*
 temp/
 
+# Webpack stuff
+package-lock.json
+

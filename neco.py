@@ -50,9 +50,6 @@ class Neco(object):
     def name(self, value):
         self._name = value
 
-    @mutaprop_action("Do something")
-    def do_some_action(self):
-        print("{0}: Doing some action!".format(self._name))
 
     @mutaproperty("Tire pressure [Bar]", MutaTypes.REAL,
                   hierarchy='Vehicle data')
@@ -79,6 +76,10 @@ class Neco(object):
     def turbo_enabled(self):
         return self._turbo_enabled
 
+    @mutaprop_action("Do something", read_only=turbo_enabled)
+    def do_some_action(self):
+        print("{0}: Doing some action!".format(self._name))
+
     @turbo_enabled.setter()
     def turbo_enabled(self, enabled):
         self._turbo_enabled = enabled
@@ -93,7 +94,8 @@ class Neco(object):
     def jesus_fish(self, value):
         self._jesus_fish = value
 
-    @mutaproperty("Body type", MutaTypes.STRING, hierarchy='Vehicle data')
+    @mutaproperty("Body type", MutaTypes.STRING, hierarchy='Vehicle data',
+                  read_only=True)
     def body_type(self):
         return self._body_type
 
