@@ -428,7 +428,7 @@ class MutaProperty(MutaProp):
 
         # Override the user setting for read_only if setter is not provided
         if not self.is_writeable():
-            temp[self.MP_READ_ONLY] = False
+            temp[self.MP_READ_ONLY] = True
 
         if obj:
             temp[self.MP_VALUE] = self.__get__(obj)
