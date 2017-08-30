@@ -148,7 +148,9 @@ The complete documentation is available at https://mutaprops.readthedocs.io
 Using the UI
 ------------
 
-TODO: Add link to RTD
+Simple explanation how to use the UI is
+`here <http://mutaprops.readthedocs.io/en/latest/usage.html#using-the-ui>`_.
+
 
 Credits
 -------
