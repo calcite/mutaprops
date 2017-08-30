@@ -29,8 +29,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Josef Nevrly",
     author_email='jnevrly@alps.cz',
-    url='http://10.54.13.215/gitlab/alcz_connectivity/mutaprops',
-    # url='https://github.com/JNevrly/mutaprops',
+    url='https://github.com/calcite/mutaprops',
     packages=[
         'mutaprops',
     ],
@@ -48,6 +47,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
     tests_require=test_requirements

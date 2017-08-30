@@ -1,0 +1,17 @@
+/*Navigation bar on the top*/
+.app-logo {
+    display: inline-block;
+    margin-right: 8px;
+    float: left;
+    background: url("/local/hoovercraft-logo.png") no-repeat;
+    width: 50px;
+}
+
+.navbar-default {
+    background-color: #940975;
+}
+
+/*Object list*/
+#sidebar .sidebar-selected {
+    border-right: 20px solid #940975;
+}

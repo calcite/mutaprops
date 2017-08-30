@@ -14,7 +14,7 @@ To install mutaprops, run this command in your terminal:
 
     $ pip install mutaprops
 
-This is the preferred method to install mutaprops, as it will always install the most recent stable release. 
+This is the preferred method to install mutaprops, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/JNevrly/mutaprops
+    $ git clone git://github.com/calcite/mutaprops
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/JNevrly/mutaprops/tarball/master
+    $ curl  -OL https://github.com/calcite/mutaprops/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/JNevrly/mutaprops
-.. _tarball: https://github.com/JNevrly/mutaprops/tarball/master
+.. _Github repo: https://github.com/calcite/mutaprops
+.. _tarball: https://github.com/calcite/mutaprops/tarball/master

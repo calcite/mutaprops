@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/JNevrly/mutaprops/issues.
+Report bugs at https://github.com/calcite/mutaprops/issues.
 
 If you are reporting a bug, please include:
 
@@ -45,7 +45,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/JNevrly/mutaprops/issues.
+The best way to send feedback is to file an issue at https://github.com/calcite/mutaprops/issues.
 
 If you are proposing a feature:
 
@@ -76,13 +76,36 @@ Ready to contribute? Here's how to set up `mutaprops` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
+5. If you plan to work on the Java-Script part (UI front-end), you need
+   to setup your npm environment as well. If you don't have already, you need
+   to get and install NPM_. Once installed, in the ``mutaprops/web_ui``
+   directory do::
+
+    # install dependencies
+    npm install
+
+    # serve with hot reload at localhost:8080
+    npm run dev
+
+   When using the hot reload dev server, the UI manager server (the python part)
+   must be running on the port ``9000``. If you need other port numbers,
+   adjust the ``mutaprops/web_ui/webpack.config.js`` file.
+
+6. When you're done making changes, check that your changes pass flake9 and the tests, including testing other Python versions with tox::
 
     $ flake8 mutaprops tests
     $ python setup.py test or py.test
     $ tox
 
    To get flake8 and tox, just pip install them into your virtualenv.
+
+7. As a last step, you should build the front-end minified distribution file::
+
+    # build for production with minification
+    npm run build
+
+   Also, if you made any changes in the ``mutaprops/web_ui/webpack.config.js``
+   file, don't include them in the commit.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -91,6 +114,8 @@ Ready to contribute? Here's how to set up `mutaprops` for local development.
     $ git push origin name-of-your-bugfix-or-feature
 
 7. Submit a pull request through the GitHub website.
+
+.. _NPM: https://www.npmjs.com/get-npm?utm_source=house&utm_medium=homepage&utm_campaign=free%20orgs&utm_term=Install%20npm
 
 Pull Request Guidelines
 -----------------------
@@ -101,8 +126,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, 3.3, 3.4 and 3.5, and for PyPy. Check
-   https://travis-ci.org/JNevrly/mutaprops/pull_requests
+3. The pull request should work for Python 3.4, 3.5 and 3.6. Check
+   https://travis-ci.org/calcite/mutaprops/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips

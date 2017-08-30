@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+""" An example of the basic mutaprops functions:
+
+* mutaproperties
+* mutasources
+* read-only parameter
+* UI manager initialization
+"""
+
 from mutaprops import *
 import logging
 import sys
@@ -19,6 +27,7 @@ class Hoovercraft:
         self._speed = speed
         self._direction = direction
         self._engine_running = False
+        self._steering_locked = True
 
     @mutaproperty("Number of eels", MutaTypes.INT, min_val=0, max_val=MAX_EELS)
     def eels(self):
@@ -43,8 +52,20 @@ class Hoovercraft:
     @engine.setter
     def engine(self, value):
         self._engine_running = value
+        self.steering_locked = not value
+        logger.info("Engine %s",
+                    'started' if self._engine_running else 'stopped')
 
-    @mutaproperty("Speed [km/h]", MutaTypes.INT, min_val=0, max_val=80)
+    @mutasource
+    def steering_locked(self):
+        return self._steering_locked
+
+    @steering_locked.setter
+    def steering_locked(self, value):
+        self._steering_locked = value
+
+    @mutaproperty("Speed [km/h]", MutaTypes.INT, min_val=0, max_val=80,
+                  read_only=steering_locked)
     def speed(self):
         return self._speed
 
@@ -54,7 +75,8 @@ class Hoovercraft:
         logger.info("Speed set to %d km/h", self._speed)
 
     @mutaproperty("Direction of travel", MutaTypes.STRING,
-                  select=['North', 'East', 'South', 'West'])
+                  select=['North', 'East', 'South', 'West'],
+                  read_only=steering_locked)
     def direction(self):
         return self._direction
 

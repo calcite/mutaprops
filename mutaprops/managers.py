@@ -58,12 +58,25 @@ class HttpMutaManager(object):
     def __init__(self, name, loop=None, master=None, local_dir=None,
                  help_doc=None, proxy_log=None, log_level=logging.NOTSET):
         """
-        :param loop: Asyncio execution loop,
-        :param master: Address of the master controller (http://masteraddr:port)
-        see `aiohttp.web.Application <http://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.run_app>`_
-        for details.
-        :param local_dir: Optional directory with files that shall be served
-        over HTTP.
+        :param name:  Name displayed in the UI top menu.
+
+        Optional:
+
+        :param loop:  Asyncio loop. If not specified, a new one will be created.
+
+        :param master: ``http://masteraddr:port``
+                       Address of the master controller.
+
+        :param local_dir:  Path to the directory which will be made accessible
+                           in the webserver as ``/local``
+
+        :param help_doc:  String
+                          A HTML code to be displayed in the help window.
+
+        :param proxy_log:  A :class:`logging.Logger` instance to be forwarded to
+                           the UI.
+
+        :param log_level:  A log level to be displayed at the UI level.
         """
         self._name = name
         self._app = web.Application(loop=loop)
@@ -337,6 +350,15 @@ class HttpMutaManager(object):
                             prefix='/api/notifications/')
 
     def add_object(self, muta_object, obj_id=None):
+        """ Add decorated object to the UI manager.
+
+        :param muta_object: An instance of a class decorated with
+                            :func:`~mutaprops.decorators.mutaprop_class`.
+
+        Optional:
+
+        :param obj_id: 'Id to be used for the added `muta_object`.
+        """
         self._logger.debug("Adding object")
 
         # Somewhat unnecessarily complicated checking
@@ -370,6 +392,11 @@ class HttpMutaManager(object):
         self._logger.debug("Added object %s" % muta_object.muta_id)
 
     def remove_object(self, muta_object):
+        """ Remove object from the UI manager. (Causes object to disappear from
+            the UI).
+
+        :param muta_object: Object to be removed.
+        """
         try:
             temp = self._muta_objects.pop(muta_object.muta_id)
             temp.muta_unregister()
@@ -432,15 +459,25 @@ class HttpMutaManager(object):
         # self._app.loop.run_forever()
 
     def run(self, **aiohttp_kwargs):
-        """ Run the manager
+        """ Run the manager.
+
         :param aiohttp_kwargs: HTTP server parameters as defined for aiohttp
-         `web.run_app <http://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.run_app>`_
+                               `web.run_app <http://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.run_app>`_
         """
         # loop.run_forever()
         # web.run_app(self._app, **aiohttp_kwargs)
         self._run(**aiohttp_kwargs)
 
     def run_in_thread(self, **aiohttp_kwargs):
+        """ Run the UI manager in a separate thread.
+
+        Theoretically this allows to run the UI for code which is otherwise
+        incompatible with Asyncio. In practice, this is a minefield and it was
+        never properly tested.
+
+        :param aiohttp_kwargs: HTTP server parameters as defined for aiohttp
+                               `web.run_app <http://aiohttp.readthedocs.io/en/stable/web_reference.html#aiohttp.web.run_app>`_
+        """
         t = threading.Thread(target=self._run, kwargs=aiohttp_kwargs)
         t.start()
 

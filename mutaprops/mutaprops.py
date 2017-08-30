@@ -326,7 +326,8 @@ class MutaProperty(MutaProp):
 
         # Notify of property change
         try:
-            if different and self._muta_change_callback:
+            if different and self._muta_change_callback \
+             and hasattr(obj, 'muta_id'):
                 logger.debug("Notification of set call for %s on %s",
                              self._muta_name, obj.muta_id)
                 self._muta_change_callback(obj.muta_id, self._muta_id,
@@ -461,15 +462,14 @@ class MutaSource(MutaProperty):
     serializable type goes.
     MutaSource can also be a class-property.
     MutaSources cannot be directly changed from the GUI layer, however they
-     can be changed indirectly from the model/MutaObject itself.
+    can be changed indirectly from the model/MutaObject itself.
 
-    Implementation Note:
-    --------------------
+    **Implementation Note**
 
-    In theory :class:`~mutaprops.MutaProperty` should be child of
-    :class:`~mutaprops.MutaSource`, in practice the differences are of such
+    In theory :class:`~mutaprops.mutaprops.MutaProperty` should be child of
+    :class:`~mutaprops.mutaprops.MutaSource`, in practice the differences are of such
     character it doesn't make it more convenient to implement
-    :class:`~mutaprops.MutaSource` as child of :class:`~mutaprops.MutaProperty`.
+    :class:`~mutaprops.mutaprops.MutaSource` as child of :class:`~mutaprops.mutaprops.MutaProperty`.
     """
     MP_CLASS_TYPE = 'source'
 
