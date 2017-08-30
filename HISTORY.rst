@@ -2,6 +2,12 @@
 History
 =======
 
+0.6.0 (2017-08-30)
+------------------
+* Added css separation
+* Added documentation
+* Minor bug fixes
+
 0.5.7 (2017-08-25)
 ------------------
 Added the forgoten JS build...
