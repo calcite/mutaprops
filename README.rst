@@ -9,8 +9,8 @@ mutaprops
 .. image:: https://img.shields.io/travis/JNevrly/mutaprops.svg
         :target: https://travis-ci.org/calcite/mutaprops
 
-.. image:: https://readthedocs.org/projects/mutaprops/badge/?version=latest
-        :target: https://mutaprops.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pip/badge/
+        :target: https://readthedocs.org/projects/pip/badge/
         :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/calcite/mutaprops/shield.svg
