@@ -72,7 +72,3 @@ temp/
 # Webpack stuff
 package-lock.json
 
-# Autodoc stuff
-docs/modules.rst
-docs/mutaprops.rst
-
