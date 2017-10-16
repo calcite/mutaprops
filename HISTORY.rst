@@ -5,6 +5,10 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.3 (2017-10-16)
+------------------
+* Fixed bug with step setting.
+
 0.6.0 (2017-08-30)
 ------------------
 * Added css separation

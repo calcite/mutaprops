@@ -394,7 +394,7 @@ class MutaProperty(MutaProp):
         temp_kwargs = self._get_kwargs()
         temp_kwargs[self.MP_MINVAL] = min_val or self._muta_min_val
         temp_kwargs[self.MP_MAXVAL] = max_val or self._muta_max_val
-        temp_kwargs[self.MP_STEP] = step or self._muta_min_val
+        temp_kwargs[self.MP_STEP] = step or self._muta_step
         temp_kwargs[self.MP_SELECT] = select or self._muta_select
 
         if func:
