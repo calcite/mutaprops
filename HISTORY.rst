@@ -5,6 +5,10 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.4 (2017-11-07)
+------------------
+* Fixed chardet dependency.
+
 0.6.3 (2017-10-16)
 ------------------
 * Fixed bug with step setting.
