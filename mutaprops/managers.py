@@ -79,7 +79,8 @@ class HttpMutaManager(object):
         :param log_level:  A log level to be displayed at the UI level.
         """
         self._name = name
-        self._app = web.Application(loop=loop)
+        self._loop = loop or asyncio.get_event_loop()
+        self._app = web.Application(loop=self._loop)
         self._muta_objects = OrderedDict()
         self._init_router(local_dir=local_dir)
         self._sockjs_manager = None
@@ -439,8 +440,8 @@ class HttpMutaManager(object):
 
         # http://aiohttp.readthedocs.io/en/stable/_modules/aiohttp/web.html?highlight=run_app
 
-        handler = self._app.make_handler()
         self._app.on_shutdown.append(self._on_shutdown)
+        handler = self._app.make_handler()
         # Task for proxy reconnector
         self._proxy_reconnector_task = asyncio.async(
             self._remote_manager_reconnector(), loop=self._app.loop)
