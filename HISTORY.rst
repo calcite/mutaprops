@@ -5,6 +5,11 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.5 (2018-08-20)
+------------------
+* Updated dependencies. (Still not newest, as it is required for
+  Mutaprops to run on Python 3.4)
+
 0.6.4 (2017-11-07)
 ------------------
 * Fixed chardet dependency.
