@@ -5,6 +5,10 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.6 (2019-01-31)
+------------------
+* Updated sockjs dependency.
+
 0.6.5 (2018-08-20)
 ------------------
 * Updated dependencies. (Still not newest, as it is required for
