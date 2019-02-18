@@ -221,8 +221,8 @@ export default {
         logItem: function(item) {
             var timestamp = new Date(item.created * 1000);
             var time = timestamp.getHours() + ":" + timestamp.getMinutes() +
-                ":" + timestamp.getMinutes() + "." +
-                timestamp.getMilliseconds();
+                ":" + timestamp.getSeconds() + "." +
+                _.padStart(timestamp.getMilliseconds(), 3, '0');
 
             var formatted_msg = vsprintf(item.msg, item.args);
 
