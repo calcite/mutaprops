@@ -254,7 +254,7 @@ class HttpMutaManager(object):
                 yield from temp_man.attach(self)
                 return web.HTTPOk()
             except MutaManagerError as e:
-                return web.HTTPError(reason=str(e))
+                return web.HTTPNotAcceptable(reason=str(e))
         else:
             return web.HTTPBadRequest()
 

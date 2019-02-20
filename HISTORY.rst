@@ -5,6 +5,14 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.8 (2019-02-20)
+------------------
+* Fixed master controller connection bug.
+
+0.6.7 (2019-02-18)
+------------------
+* Fixed log timestamp bug.
+
 0.6.6 (2019-01-31)
 ------------------
 * Updated sockjs dependency.
