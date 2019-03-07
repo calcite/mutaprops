@@ -224,7 +224,7 @@ export default {
                 ":" + timestamp.getSeconds() + "." +
                 _.padStart(timestamp.getMilliseconds(), 3, '0');
 
-            var formatted_msg = vsprintf(item.msg.replace("%", "%%"),
+            var formatted_msg = vsprintf(item.msg.replace(/%/g, "%%"),
                 item.args);
 
             return time + " [" + item.levelname + "] " + formatted_msg;

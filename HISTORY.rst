@@ -5,6 +5,10 @@ History
 Latest releases
 +++++++++++++++
 
+0.6.10 (2019-03-07)
+------------------
+* Fixed another log message placeholder escaping bug !!
+
 0.6.9 (2019-03-07)
 ------------------
 * Fixed log message placeholder escaping bug.
