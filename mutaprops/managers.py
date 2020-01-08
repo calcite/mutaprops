@@ -5,6 +5,7 @@ import asyncio
 import urllib.parse
 from aiohttp import web, ClientSession, WSMsgType, WSServerHandshakeError,\
     ClientOSError
+from aiohttp import __version__ as aiohttp_version
 from .mutaprops import MutaPropError, MutaPropClass, MutaAction, MutaTypes
 from collections import OrderedDict
 import threading
@@ -80,7 +81,10 @@ class HttpMutaManager(object):
         """
         self._name = name
         self._loop = loop or asyncio.get_event_loop()
-        self._app = web.Application(loop=self._loop)
+        if aiohttp_version > "3.2":
+            self._app = web.Application()
+        else:
+            self._app = web.Application(loop=self._loop)
         self._muta_objects = OrderedDict()
         self._init_router(local_dir=local_dir)
         self._sockjs_manager = None
@@ -321,6 +325,7 @@ class HttpMutaManager(object):
         if self._sockjs_manager:
             self._sockjs_manager.broadcast(msg)
 
+    @asyncio.coroutine
     def _index(self, request):
         return web.Response(body=self.INDEX_FILE, content_type='text/html')
 
@@ -427,11 +432,15 @@ class HttpMutaManager(object):
     def register_on_master(self, master_addr):
         # I know that it's not good to re-load session for single request,
         # but in this case it's so infrequent it doesn't matter
-        temp_session = ClientSession(loop=self._app.loop)
-        resp = yield from temp_session.post(master_addr + '/api/remote',
-                            data=json.dumps({'address':
-                            "http://{0}:{1}".format(self._host_addr,
-                                                    self._host_port)}))
+        if aiohttp_version >= "4.0":
+            temp_session = ClientSession()
+        else:
+            temp_session = ClientSession(loop=self._loop)
+
+        resp = yield from temp_session.post(
+            master_addr + '/api/remote',
+            json={'address': "http://{0}:{1}".format(self._host_addr,
+                                                     self._host_port)})
         if resp.status != 200:
             raise MutaManagerError("Couldn't register to the master")
         yield from temp_session.close()
@@ -441,23 +450,41 @@ class HttpMutaManager(object):
         # http://aiohttp.readthedocs.io/en/stable/_modules/aiohttp/web.html?highlight=run_app
 
         self._app.on_shutdown.append(self._on_shutdown)
-        handler = self._app.make_handler()
         # Task for proxy reconnector
-        self._proxy_reconnector_task = asyncio.async(
-            self._remote_manager_reconnector(), loop=self._app.loop)
+        self._proxy_reconnector_task = self._loop.create_task(
+            self._remote_manager_reconnector())
+
+        if self._master_manager:
+            self._loop.create_task(
+                self.register_on_master(self._master_manager))
 
         # Now run it all
         self._host_addr = host
         self._host_port = port
 
-        if self._master_manager:
-            asyncio.async(self.register_on_master(self._master_manager),
-                                  loop=self._app.loop)
         print("Server starting at http://{0}:{1}".format(host, port))
-        self._app.loop.run_until_complete(asyncio.gather(
-            self._app.loop.create_server(handler, host, port),
+        if aiohttp_version > "3.2":
+            self._run_new()
+        else:
+            self._run_old()
+
+    def _run_old(self):
+        # http://aiohttp.readthedocs.io/en/stable/_modules/aiohttp/web.html?highlight=run_app
+        handler = self._app.make_handler()
+
+        self._loop.run_until_complete(asyncio.gather(
+            self._loop.create_server(handler, self._host_addr,
+                                         self._host_port),
             self._proxy_reconnector_task))
-        # self._app.loop.run_forever()
+
+    def _run_new(self, host='0.0.0.0', port='8080'):
+
+        runner = web.AppRunner(self._app)
+        self._loop.run_until_complete(runner.setup())
+        site = web.TCPSite(runner, self._host_addr, self._host_port)
+
+        self._loop.run_until_complete(asyncio.gather(
+            site.start(), self._proxy_reconnector_task))
 
     def run(self, **aiohttp_kwargs):
         """ Run the manager.
@@ -549,7 +576,10 @@ class HttpManagerProxy:
         :return:
         """
         self._host_manager = host_manager
-        self._session = ClientSession(loop=self._host_manager._app.loop)
+        if aiohttp_version >= "4.0":
+            self._session = ClientSession()
+        else:
+            self._session = ClientSession(loop=self._host_manager._loop)
 
         # Open the WebSocket
         try:
@@ -561,7 +591,7 @@ class HttpManagerProxy:
                                    self._address)
 
         # Start the WS manager
-        self._ws_man = asyncio.async(self.ws_manager(), loop=self._session.loop)
+        self._ws_man = self._host_manager._loop.create_task(self.ws_manager())
 
         # Get and process the remote objects
         resp = yield from self._session.get(self._address + '/api/objects')
@@ -656,7 +686,7 @@ class HttpMutaObjectProxy:
     def __init__(self, manager_proxy, obj_id):
         self._manager_proxy = manager_proxy
         self._address = "{0}/api/objects/{1}".format(
-            self._manager_proxy.address, obj_id)
+            self._manager_proxy.address, urllib.parse.quote(obj_id))
         self._obj_id = obj_id
         self._session = self._manager_proxy.session
 
