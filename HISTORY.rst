@@ -1,20 +1,16 @@
-=======
 History
 =======
 
-Latest releases
-+++++++++++++++
-
-0.7.0 (2020-01-08)
+0.7.4 (2020-01-08)
 ------------------
 * Added compatibility with newer versions of AioHttp (4.0.0dev) and Python (3.8)
 
 0.6.11 (2019-03-07)
-------------------
+-------------------
 * Fixed (OMG) yet another log message placeholder escaping bug !!!
 
 0.6.10 (2019-03-07)
-------------------
+-------------------
 * Fixed another log message placeholder escaping bug !!
 
 0.6.9 (2019-03-07)
@@ -51,9 +47,6 @@ Latest releases
 * Added css separation
 * Added documentation
 * Minor bug fixes
-
-Older releases
-++++++++++++++
 
 0.5.7 (2017-08-25)
 ------------------
